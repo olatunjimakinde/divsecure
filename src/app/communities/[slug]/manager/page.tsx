@@ -1,0 +1,207 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ResidentsList } from './residents-list'
+import { GuardsList } from './guards-list'
+import { HouseholdList } from './households/household-list'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+
+import { SearchInput } from '@/components/search-input'
+import { VisitorLogsList } from './visitors/visitor-logs-list'
+import { GlobalSearch } from '../../manager/global-search'
+
+export default async function ManagerDashboardPage({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ slug: string }>
+    searchParams: Promise<{ query?: string }>
+}) {
+    const supabase = await createClient()
+    const { slug } = await params
+    const { query } = await searchParams
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/login')
+    }
+
+    // Verify manager role
+    const { data: community } = await supabase
+        .from('communities')
+        .select('id, name')
+        .eq('slug', slug)
+        .single()
+
+    if (!community) {
+        redirect('/dashboard')
+    }
+
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', community.id)
+        .eq('user_id', user.id)
+        .single()
+
+    if (member?.role !== 'community_manager') {
+        redirect(`/communities/${slug}`)
+    }
+
+    // Fetch households with members and their profiles
+    const { data: households, error: householdsError } = await supabase
+        .from('households')
+        .select(`
+            *,
+            members:members(
+                id,
+                user_id,
+                is_household_head,
+                profiles:profiles(full_name, email)
+            )
+        `)
+        .eq('community_id', community.id)
+        .order('name')
+
+    if (householdsError) {
+        console.error('Error fetching households:', householdsError)
+    }
+
+    // Fetch unassigned residents
+    const { data: unassignedMembers, error: membersError } = await supabase
+        .from('members')
+        .select(`
+            id,
+            user_id,
+            profiles:profiles(full_name, email)
+        `)
+        .eq('community_id', community.id)
+        .eq('role', 'resident')
+        .is('household_id', null)
+        .order('created_at', { ascending: false })
+
+    if (membersError) {
+        console.error('Error fetching unassigned members:', membersError)
+    }
+
+    // Transform data
+    const formattedHouseholds = households?.map(h => ({
+        ...h,
+        member_count: h.members?.length || 0,
+        members: h.members?.map((m: any) => ({
+            id: m.id,
+            name: m.profiles?.full_name || 'Unknown',
+            email: m.profiles?.email || 'No email',
+            is_household_head: m.is_household_head
+        })) || []
+    })) || []
+
+    const formattedUnassigned = unassignedMembers?.map((m: any) => ({
+        id: m.id,
+        name: m.profiles?.full_name || 'Unknown',
+        email: m.profiles?.email || 'No email',
+        is_household_head: false // Unassigned members cannot be heads
+    })) || []
+
+    // Filter households if search query exists (client-side filtering for now as structure is complex)
+    // Or we can filter in the query if we change the query structure.
+    // For households, we want to search by name or contact email.
+
+    let filteredHouseholds = formattedHouseholds
+    if (query) {
+        const lowerQuery = query.toLowerCase()
+        filteredHouseholds = formattedHouseholds.filter(h =>
+            h.name.toLowerCase().includes(lowerQuery) ||
+            (h.contact_email && h.contact_email.toLowerCase().includes(lowerQuery))
+        )
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Manager Dashboard</h1>
+                    <p className="text-muted-foreground">
+                        Manage your community residents and security.
+                    </p>
+                </div>
+                <GlobalSearch communityId={community.id} communitySlug={slug} />
+            </div>
+
+            <Tabs defaultValue="residents" className="space-y-4">
+                <TabsList>
+                    <TabsTrigger value="residents">Residents</TabsTrigger>
+                    <TabsTrigger value="guards">Security Guards</TabsTrigger>
+                    <TabsTrigger value="households">Households</TabsTrigger>
+                    <TabsTrigger value="visitors">Visitor Logs</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="residents" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Residents</CardTitle>
+                            <CardDescription>
+                                Manage resident access and approvals.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ResidentsList communityId={community.id} communitySlug={slug} searchQuery={query} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="guards" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Security Guards</CardTitle>
+                            <CardDescription>
+                                Manage security personnel access.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <GuardsList communityId={community.id} searchQuery={query} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="households" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Households</CardTitle>
+                            <CardDescription>
+                                Manage physical units and resident assignments.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <HouseholdList
+                                households={filteredHouseholds}
+                                unassignedMembers={formattedUnassigned}
+                                communityId={community.id}
+                                communitySlug={slug}
+                            />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="visitors" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Visitor Logs</CardTitle>
+                            <CardDescription>
+                                View history of visitor entries.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <VisitorLogsList communityId={community.id} searchQuery={query} />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </div>
+    )
+}

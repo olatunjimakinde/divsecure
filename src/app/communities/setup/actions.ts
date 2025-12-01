@@ -147,7 +147,7 @@ export async function setupCommunity(prevState: any, formData: FormData) {
                 .from('community_subscription_settings')
                 .insert({
                     community_id: community.id,
-                    plan_id: finalPlanId,
+                    plan_id: finalPlanId as string,
                     status: 'active',
                     current_period_end: currentPeriodEnd.toISOString()
                 })

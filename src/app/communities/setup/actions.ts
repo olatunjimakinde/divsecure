@@ -129,7 +129,7 @@ export async function setupCommunity(prevState: any, formData: FormData) {
         // We need to know the plan. If we have payment, we can get plan_id from it.
         // If we passed planId in form (e.g. free plan), use that.
 
-        let finalPlanId = planId
+        let finalPlanId: string | undefined = planId
         if (!finalPlanId && reference) {
             const { data: payment } = await supabaseAdmin
                 .from('subscription_payments')

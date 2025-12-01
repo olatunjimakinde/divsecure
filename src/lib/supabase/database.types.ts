@@ -80,6 +80,36 @@ export interface Database {
                     }
                 ]
             }
+            subscription_plans: {
+                Row: {
+                    id: string
+                    name: string
+                    price: number
+                    features: Json
+                    is_active: boolean
+                    is_popular: boolean
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    name: string
+                    price: number
+                    features?: Json
+                    is_active?: boolean
+                    is_popular?: boolean
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    name?: string
+                    price?: number
+                    features?: Json
+                    is_active?: boolean
+                    is_popular?: boolean
+                    created_at?: string
+                }
+                Relationships: []
+            }
             visitor_codes: {
                 Row: {
                     id: string
@@ -586,6 +616,165 @@ export interface Database {
                         foreignKeyName: "payments_bill_id_fkey"
                         columns: ["bill_id"]
                         referencedRelation: "bills"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            global_subscription_settings: {
+                Row: {
+                    key: string
+                    value: Json
+                    updated_at: string
+                }
+                Insert: {
+                    key: string
+                    value: Json
+                    updated_at?: string
+                }
+                Update: {
+                    key?: string
+                    value?: Json
+                    updated_at?: string
+                }
+                Relationships: []
+            }
+            community_subscription_settings: {
+                Row: {
+                    community_id: string
+                    plan_id: string | null
+                    status: 'active' | 'past_due' | 'canceled' | 'trialing'
+                    custom_settings: Json | null
+                    updated_at: string
+                    current_period_end: string | null
+                }
+                Insert: {
+                    community_id: string
+                    plan_id?: string | null
+                    status?: 'active' | 'past_due' | 'canceled' | 'trialing'
+                    custom_settings?: Json | null
+                    updated_at?: string
+                    current_period_end?: string | null
+                }
+                Update: {
+                    community_id?: string
+                    plan_id?: string | null
+                    status?: 'active' | 'past_due' | 'canceled' | 'trialing'
+                    custom_settings?: Json | null
+                    updated_at?: string
+                    current_period_end?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "community_subscription_settings_community_id_fkey"
+                        columns: ["community_id"]
+                        referencedRelation: "communities"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "community_subscription_settings_plan_id_fkey"
+                        columns: ["plan_id"]
+                        referencedRelation: "subscription_plans"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            subscription_payments: {
+                Row: {
+                    id: string
+                    community_id: string | null
+                    plan_id: string | null
+                    amount: number
+                    reference: string
+                    status: 'success' | 'failed' | 'pending'
+                    payment_date: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    community_id?: string | null
+                    plan_id?: string | null
+                    amount: number
+                    reference: string
+                    status: 'success' | 'failed' | 'pending'
+                    payment_date?: string
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    community_id?: string | null
+                    plan_id?: string | null
+                    amount?: number
+                    reference?: string
+                    status?: 'success' | 'failed' | 'pending'
+                    payment_date?: string
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "subscription_payments_community_id_fkey"
+                        columns: ["community_id"]
+                        referencedRelation: "communities"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "subscription_payments_plan_id_fkey"
+                        columns: ["plan_id"]
+                        referencedRelation: "subscription_plans"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            },
+            security_messages: {
+                Row: {
+                    id: string
+                    community_id: string
+                    sender_id: string
+                    subject: string
+                    content: string
+                    is_read: boolean
+                    created_at: string
+                    recipient_id: string | null
+                    recipient_group: 'all_guards' | 'community_manager' | 'head_of_security' | 'all_residents' | null
+                }
+                Insert: {
+                    id?: string
+                    community_id: string
+                    sender_id: string
+                    subject: string
+                    content: string
+                    is_read?: boolean
+                    created_at?: string
+                    recipient_id?: string | null
+                    recipient_group?: 'all_guards' | 'community_manager' | 'head_of_security' | 'all_residents' | null
+                }
+                Update: {
+                    id?: string
+                    community_id?: string
+                    sender_id?: string
+                    subject?: string
+                    content?: string
+                    is_read?: boolean
+                    created_at?: string
+                    recipient_id?: string | null
+                    recipient_group?: 'all_guards' | 'community_manager' | 'head_of_security' | 'all_residents' | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "security_messages_community_id_fkey"
+                        columns: ["community_id"]
+                        referencedRelation: "communities"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "security_messages_sender_id_fkey"
+                        columns: ["sender_id"]
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "security_messages_recipient_id_fkey"
+                        columns: ["recipient_id"]
+                        referencedRelation: "profiles"
                         referencedColumns: ["id"]
                     }
                 ]

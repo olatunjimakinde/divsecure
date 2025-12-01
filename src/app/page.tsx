@@ -2,8 +2,16 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Shield, Users, Calendar, MessageSquare, Check, Star, Menu } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient()
+  const { data: plans } = await supabase
+    .from('subscription_plans')
+    .select('*')
+    .eq('is_active', true)
+    .order('price', { ascending: true })
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
@@ -41,19 +49,20 @@ export default function LandingPage() {
               src="/hero-image.png"
               alt="Secure Community"
               fill
-              className="object-cover opacity-40"
+              className="object-cover opacity-30"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/50 to-background" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
           </div>
           <div className="container px-4 md:px-6 text-center">
             <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary mb-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
               <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
               v2.0 is now live
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl mx-auto mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl mx-auto mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 drop-shadow-sm">
               Modern Management for <br className="hidden sm:block" />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">Secure Communities</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-purple-600 animate-gradient-x">Secure Communities</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
               Streamline visitor access, enhance security, and foster community engagement with the all-in-one platform designed for modern living.
@@ -149,32 +158,50 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
-              <PricingCard
-                title="Starter"
-                price="₦0"
-                description="For small communities"
-                features={['Up to 50 Residents', '2 Security Guards', 'Basic Visitor Logs', 'Community Chat']}
-              />
-              <PricingCard
-                title="Pro"
-                price="₦50,000"
-                description="For growing estates"
-                features={['Up to 500 Residents', '10 Security Guards', 'Advanced Analytics', 'Priority Support', 'Custom Branding']}
-                popular
-              />
-              <PricingCard
-                title="Enterprise"
-                price="₦200,000"
-                description="For large complexes"
-                features={['Unlimited Residents', 'Unlimited Guards', 'Dedicated Account Manager', 'SLA', 'API Access']}
-              />
+              {plans?.map((plan) => {
+                const features = (plan.features as any) || {}
+                const featureList = []
+                if (features.max_residents === -1) featureList.push('Unlimited Residents')
+                else featureList.push(`Up to ${features.max_residents} Residents`)
+
+                if (features.max_guards === -1) featureList.push('Unlimited Guards')
+                else featureList.push(`${features.max_guards} Security Guards`)
+
+                if (features.priority_support) featureList.push('Priority Support')
+                if (features.dedicated_support) featureList.push('Dedicated Account Manager')
+
+                // Add generic features based on plan name for visual consistency with previous design
+                if (plan.name === 'Free') {
+                  featureList.push('Basic Visitor Logs', 'Community Chat')
+                } else if (plan.name === 'Pro') {
+                  featureList.push('Advanced Analytics', 'Custom Branding')
+                } else if (plan.name === 'Enterprise') {
+                  featureList.push('SLA', 'API Access')
+                }
+
+                return (
+                  <PricingCard
+                    key={plan.id}
+                    title={plan.name}
+                    price={`₦${plan.price.toLocaleString()}`}
+                    description={plan.name === 'Free' ? 'For small communities' : plan.name === 'Pro' ? 'For growing estates' : 'For large complexes'}
+                    features={featureList}
+                    popular={plan.is_popular}
+                  />
+                )
+              })}
+              {!plans?.length && (
+                <div className="col-span-3 text-center text-muted-foreground">
+                  No pricing plans available at the moment.
+                </div>
+              )}
             </div>
           </div>
         </section>
 
         {/* CTA */}
         <section className="py-24 relative overflow-hidden">
-          <div className="absolute inset-0 -z-10 bg-primary/5" />
+          <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10" />
           <div className="container px-4 md:px-6 text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-6">Ready to upgrade your community?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
@@ -221,13 +248,13 @@ export default function LandingPage() {
           <div>
             <h3 className="font-semibold mb-4">Legal</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="#" className="hover:text-foreground">Privacy</Link></li>
-              <li><Link href="#" className="hover:text-foreground">Terms</Link></li>
+              <li><Link href="/privacy" className="hover:text-foreground">Privacy</Link></li>
+              <li><Link href="/terms" className="hover:text-foreground">Terms</Link></li>
             </ul>
           </div>
         </div>
         <div className="container px-4 md:px-6 mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          © 2024 Divsecure Inc. All rights reserved.
+          © {new Date().getFullYear()} Divsecure Inc. All rights reserved.
         </div>
       </footer>
     </div>

@@ -4,6 +4,24 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+export async function createChannelCore(supabase: any, data: { name: string, slug: string, communityId: string, audience: string, allowReplies: boolean }) {
+    const { error } = await supabase.from('channels').insert({
+        name: data.name,
+        slug: data.slug,
+        community_id: data.communityId,
+        audience: data.audience,
+        allow_replies: data.allowReplies,
+    } as any)
+
+    if (error) {
+        if (error.code === '23505') {
+            return { error: 'Channel slug already exists in this community.' }
+        }
+        return { error: 'Failed to create channel.' }
+    }
+    return { success: true }
+}
+
 export async function createChannel(formData: FormData) {
     const supabase = await createClient()
 
@@ -44,19 +62,16 @@ export async function createChannel(formData: FormData) {
     const audience = formData.get('audience') as string
     const allowReplies = formData.get('allowReplies') === 'on'
 
-    const { error } = await supabase.from('channels').insert({
+    const result = await createChannelCore(supabase, {
         name,
         slug,
-        community_id: communityId,
+        communityId,
         audience,
-        allow_replies: allowReplies,
-    } as any)
+        allowReplies
+    })
 
-    if (error) {
-        if (error.code === '23505') {
-            return { error: 'Channel slug already exists in this community.' }
-        }
-        return { error: 'Failed to create channel.' }
+    if (result.error) {
+        return result
     }
 
     revalidatePath(`/communities/${communitySlug}`)

@@ -1,4 +1,6 @@
-import { createAdminClient } from './src/lib/supabase/server'
+import { createChannelCore } from '../../src/app/communities/channels/actions'
+import { createPostCore } from '../../src/app/communities/posts/actions'
+import { createAdminClient } from '../../src/lib/supabase/server'
 
 async function verifyEnhancements() {
     const supabase = await createAdminClient()

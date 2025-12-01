@@ -159,40 +159,9 @@ export function SignupForm({ communities }: { communities: Community[] }) {
                     )}
 
                     {role === 'manager' && (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="communityName">Community Name</Label>
-                                <Input
-                                    id="communityName"
-                                    name="communityName"
-                                    placeholder="Sunset Valley"
-                                    required
-                                    value={communityName}
-                                    onChange={handleNameChange}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="communitySlug">Community URL Slug</Label>
-                                <div className="flex items-center space-x-2">
-                                    <span className="text-sm text-muted-foreground whitespace-nowrap">/communities/</span>
-                                    <Input
-                                        id="communitySlug"
-                                        name="communitySlug"
-                                        placeholder="sunset-valley"
-                                        required
-                                        value={communitySlug}
-                                        onChange={handleSlugChange}
-                                    />
-                                </div>
-                                <p className="text-[0.8rem] text-muted-foreground">
-                                    Unique URL for your community.
-                                </p>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="communityAddress">Community Address</Label>
-                                <Input id="communityAddress" name="communityAddress" placeholder="123 Main St" required />
-                            </div>
-                        </>
+                        <div className="text-sm text-muted-foreground text-center py-4">
+                            <p>You will be able to create your community after subscribing.</p>
+                        </div>
                     )}
 
                     <SubmitButton />

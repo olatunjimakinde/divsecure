@@ -48,6 +48,9 @@ export default async function AdminSubscriptionsPage() {
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">{plan.name}</CardTitle>
                             <div className="flex items-center gap-2">
+                                {plan.is_popular && (
+                                    <Badge variant="default" className="bg-primary hover:bg-primary/90">Popular</Badge>
+                                )}
                                 <span className="text-2xl font-bold">₦{plan.price.toLocaleString()}</span>
                                 <EditPlanDialog plan={plan} />
                             </div>

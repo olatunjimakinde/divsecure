@@ -3,6 +3,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+export async function createPostCore(supabase: any, data: { content: string, channelId: string, userId: string }) {
+    const { error } = await supabase.from('posts').insert({
+        content: data.content,
+        channel_id: data.channelId,
+        user_id: data.userId,
+    })
+
+    if (error) {
+        return { error: 'Failed to create post.' }
+    }
+    return { success: true }
+}
+
 export async function createPost(formData: FormData) {
     const supabase = await createClient()
 
@@ -19,14 +32,14 @@ export async function createPost(formData: FormData) {
         return { error: 'You must be logged in to post.' }
     }
 
-    const { error } = await supabase.from('posts').insert({
+    const result = await createPostCore(supabase, {
         content,
-        channel_id: channelId,
-        user_id: user.id,
+        channelId,
+        userId: user.id
     })
 
-    if (error) {
-        return { error: 'Failed to create post.' }
+    if (result.error) {
+        return result
     }
 
     revalidatePath(`/communities/${communitySlug}/${channelSlug}`)

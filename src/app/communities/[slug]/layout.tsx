@@ -7,6 +7,8 @@ import { NotificationsPopover } from '@/components/notifications-popover'
 import { SignOutButton } from '@/components/sign-out-button'
 import { MobileCommunityNav } from '@/components/mobile-community-nav'
 import { MobileSidebar } from '@/components/mobile-sidebar'
+import { Building2 } from 'lucide-react'
+import { SubscriptionEnforcer } from '@/components/subscription-enforcer'
 
 export default async function CommunityLayout({
     children,
@@ -33,8 +35,8 @@ export default async function CommunityLayout({
         notFound()
     }
 
-    // 2. Parallel Fetch: Channels, Member (if user), Notifications (if user)
-    const [channelsResult, memberResult, notificationsResult] = await Promise.all([
+    // 2. Parallel Fetch: Channels, Member (if user), Notifications (if user), Subscription, Profile (for super admin check)
+    const [channelsResult, memberResult, notificationsResult, subscriptionResult, profileResult] = await Promise.all([
         supabase
             .from('channels')
             .select('*')
@@ -53,18 +55,39 @@ export default async function CommunityLayout({
             .select('*')
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
-            .limit(10) : Promise.resolve({ data: [] })
+            .limit(10) : Promise.resolve({ data: [] }),
+
+        supabase
+            .from('community_subscription_settings')
+            .select('status, current_period_end')
+            .eq('community_id', community.id)
+            .maybeSingle(),
+
+        user ? supabase
+            .from('profiles')
+            .select('is_super_admin')
+            .eq('id', user.id)
+            .single() : Promise.resolve({ data: null })
     ])
 
     const channels = channelsResult.data
     const member = memberResult.data
     const notifications = notificationsResult.data
+    const subscription = subscriptionResult.data
+    const profile = profileResult.data
+
+    let isExpired = false
+    if (subscription) {
+        if (subscription.status === 'canceled') isExpired = true
+        if (subscription.status === 'past_due') isExpired = true
+    }
 
     const isOwner = user?.id === community.owner_id
-    const isManager = member?.role === 'community_manager'
+    const isSuperAdmin = !!profile?.is_super_admin
+    const isManager = (member?.role === 'community_manager') || isSuperAdmin
     const isGuard = member?.role ? ['guard', 'head_of_security'].includes(member.role) : false
     const isResident = member?.role === 'resident'
-    const isHouseholdHead = member?.is_household_head
+    const isHouseholdHead = !!member?.is_household_head
     const isPending = member?.status === 'pending'
 
     if (isPending) {
@@ -72,9 +95,12 @@ export default async function CommunityLayout({
             <div className="flex min-h-screen flex-col">
                 <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
                     <div className="flex items-center gap-2 font-semibold">
-                        <Link href="/dashboard">Community SaaS</Link>
+                        <Link href="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                            <Building2 className="h-5 w-5" />
+                            <span>Dashboard</span>
+                        </Link>
                         <span className="text-muted-foreground">/</span>
-                        <span>{community.name}</span>
+                        <span className="font-bold text-primary">{community.name}</span>
                     </div>
                     <div className="ml-auto flex items-center gap-4">
                         <Button variant="ghost" asChild>
@@ -203,9 +229,12 @@ export default async function CommunityLayout({
                     </nav>
                 </MobileSidebar>
                 <div className="flex items-center gap-2 font-semibold">
-                    <Link href="/dashboard">Community SaaS</Link>
-                    <span className="text-muted-foreground">/</span>
-                    <span>{community.name}</span>
+                    <Link href="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors hidden md:flex">
+                        <Building2 className="h-5 w-5" />
+                        <span>Dashboard</span>
+                    </Link>
+                    <span className="text-muted-foreground hidden md:inline">/</span>
+                    <span className="font-bold text-primary text-lg">{community.name}</span>
                 </div>
                 <div className="ml-auto flex items-center gap-4">
                     {user && <NotificationsPopover notifications={notifications || []} />}
@@ -287,6 +316,11 @@ export default async function CommunityLayout({
                                         Feature Settings
                                     </Link>
                                 </Button>
+                                <Button variant="ghost" className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
+                                    <Link href={`/communities/${slug}/manager/settings/billing`}>
+                                        Billing & Subscription
+                                    </Link>
+                                </Button>
                             </>
                         )}
 
@@ -312,7 +346,13 @@ export default async function CommunityLayout({
                     </nav>
                 </aside>
                 <main className="flex-1 p-4 lg:p-8 mb-16 md:mb-0 pb-20 md:pb-8">
-                    {children}
+                    <SubscriptionEnforcer
+                        isExpired={isExpired}
+                        isManager={isManager}
+                        communitySlug={slug}
+                    >
+                        {children}
+                    </SubscriptionEnforcer>
                 </main>
             </div>
             <MobileCommunityNav slug={slug} isManager={isManager} isGuard={isGuard} />

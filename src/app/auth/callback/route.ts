@@ -7,6 +7,8 @@ export async function GET(request: Request) {
     const next = searchParams.get('next') ?? '/'
 
     console.log('Auth callback params:', Object.fromEntries(searchParams.entries()))
+    console.log('Auth callback origin:', origin)
+    console.log('Auth callback next:', next)
 
     if (code) {
         const supabase = await createClient()
@@ -24,14 +26,19 @@ export async function GET(request: Request) {
 
         const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
         const isLocalEnv = process.env.NODE_ENV === 'development'
+
+        let redirectUrl = ''
         if (isLocalEnv) {
             // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-            return NextResponse.redirect(`${origin}${next}`)
+            redirectUrl = `${origin}${next}`
         } else if (forwardedHost) {
-            return NextResponse.redirect(`https://${forwardedHost}${next}`)
+            redirectUrl = `https://${forwardedHost}${next}`
         } else {
-            return NextResponse.redirect(`${origin}${next}`)
+            redirectUrl = `${origin}${next}`
         }
+
+        console.log('Auth callback redirecting to:', redirectUrl)
+        return NextResponse.redirect(redirectUrl)
     }
 
     // return the user to an error page with instructions

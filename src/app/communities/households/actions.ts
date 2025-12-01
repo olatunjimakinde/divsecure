@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { getURL } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -59,8 +60,11 @@ export async function createHousehold(formData: FormData) {
                 userId = profiles.id
             } else {
                 // Invite User
+                const redirectTo = `${getURL()}auth/callback?next=/update-password`
+                console.log('Inviting user with redirectTo:', redirectTo)
+
                 const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(contactEmail, {
-                    redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm?next=/update-password`
+                    redirectTo
                 })
                 if (inviteError) {
                     console.error('Error inviting user:', inviteError)
@@ -498,8 +502,11 @@ export async function inviteMemberToHouseholdCore(supabaseAdmin: any, communityI
         userId = profile.id
     } else {
         // Invite User
+        const redirectTo = `${getURL()}auth/callback?next=${encodeURIComponent('/update-password')}`
+        console.log('Inviting user with redirectTo:', redirectTo)
+
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm?next=/update-password`
+            redirectTo
         })
         if (inviteError) {
             console.error('Error inviting user:', inviteError)

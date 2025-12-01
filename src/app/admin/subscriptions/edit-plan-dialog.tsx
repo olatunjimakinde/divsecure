@@ -23,6 +23,7 @@ interface Plan {
     name: string
     price: number
     features: any
+    is_popular: boolean
 }
 
 export function EditPlanDialog({ plan }: { plan: Plan }) {
@@ -31,6 +32,7 @@ export function EditPlanDialog({ plan }: { plan: Plan }) {
     const [name, setName] = useState(plan.name)
     const [price, setPrice] = useState(plan.price)
     const [features, setFeatures] = useState(JSON.stringify(plan.features, null, 2))
+    const [isPopular, setIsPopular] = useState(plan.is_popular)
 
     const handleUpdate = async () => {
         setLoading(true)
@@ -48,6 +50,7 @@ export function EditPlanDialog({ plan }: { plan: Plan }) {
                 name,
                 price: Number(price),
                 features: parsedFeatures,
+                is_popular: isPopular,
             })
             toast.success('Plan updated successfully')
             setOpen(false)
@@ -95,6 +98,23 @@ export function EditPlanDialog({ plan }: { plan: Plan }) {
                             onChange={(e) => setPrice(Number(e.target.value))}
                             className="col-span-3"
                         />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="isPopular" className="text-right">
+                            Popular
+                        </Label>
+                        <div className="flex items-center space-x-2 col-span-3">
+                            <input
+                                type="checkbox"
+                                id="isPopular"
+                                checked={isPopular}
+                                onChange={(e) => setIsPopular(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <label htmlFor="isPopular" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                Mark as Most Popular
+                            </label>
+                        </div>
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
                         <Label htmlFor="features" className="text-right pt-2">

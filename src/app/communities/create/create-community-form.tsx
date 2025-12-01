@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { useState } from 'react'
 
-export function CreateCommunityForm() {
+export function CreateCommunityForm({ paymentRef, planId }: { paymentRef?: string; planId?: string }) {
     const [error, setError] = useState<string | null>(null)
 
     async function handleSubmit(formData: FormData) {
@@ -22,6 +22,8 @@ export function CreateCommunityForm() {
         <Card>
             <CardContent className="pt-6">
                 <form action={handleSubmit} className="space-y-6">
+                    <input type="hidden" name="payment_ref" value={paymentRef || ''} />
+                    <input type="hidden" name="plan_id" value={planId || ''} />
                     <div className="space-y-2">
                         <Label htmlFor="name">Name</Label>
                         <Input id="name" name="name" placeholder="My Awesome Community" required />

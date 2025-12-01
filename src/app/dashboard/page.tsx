@@ -4,6 +4,8 @@ import { signout } from '../(auth)/actions'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import Link from 'next/link'
+import { ManagerSummary } from '@/components/dashboard/manager-summary'
+import { ResidentSummary } from '@/components/dashboard/resident-summary'
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -29,21 +31,15 @@ export default async function DashboardPage() {
         redirect(`/communities/${guardMembership.community.slug}/security`)
     }
 
-    // Check access control for UI
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_super_admin')
-        .eq('id', user.id)
-        .single()
-
+    // Check for active subscription
     const { data: subscription } = await supabase
         .from('subscriptions')
-        .select('status')
+        .select('status, current_period_end')
         .eq('user_id', user.id)
         .in('status', ['active', 'trialing'])
-        .maybeSingle()
+        .single()
 
-    const isAllowed = profile?.is_super_admin || !!subscription
+    const isAllowed = (!!subscription && new Date(subscription.current_period_end!) > new Date()) || communities.length > 0
 
     return (
         <div className="min-h-screen bg-muted/30">
@@ -57,9 +53,11 @@ export default async function DashboardPage() {
                             </p>
                         </div>
                         {isAllowed ? (
-                            <Button asChild className="w-full sm:w-auto">
-                                <Link href="/communities/create">Create Community</Link>
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button asChild variant="outline" className="w-full sm:w-auto">
+                                    <Link href="/communities/create">Add Community</Link>
+                                </Button>
+                            </div>
                         ) : (
                             <Button asChild variant="default" className="w-full sm:w-auto">
                                 <Link href="/subscribe">Subscribe to Create</Link>
@@ -67,38 +65,73 @@ export default async function DashboardPage() {
                         )}
                     </div>
 
-                    {communities.length === 0 ? (
+                    {memberships?.length === 0 ? (
                         <Card className="text-center py-12 border-dashed">
                             <CardHeader>
-                                <CardTitle>No communities yet</CardTitle>
+                                <CardTitle>Welcome to Community SaaS</CardTitle>
                                 <CardDescription>
-                                    You haven&apos;t joined or created any communities yet.
+                                    You haven&apos;t created any communities yet. Subscribe to a plan to get started.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                {isAllowed ? (
-                                    <Button asChild>
-                                        <Link href="/communities/create">Create your first community</Link>
+                                <div className="flex flex-col items-center gap-4">
+                                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                                        Click the button below to subscribe and create a secured environment for your community.
+                                    </p>
+                                    <Button asChild variant="default" size="lg">
+                                        <Link href="/subscribe?intent=new_community">Subscribe to Create Community</Link>
                                     </Button>
-                                ) : (
-                                    <Button asChild variant="default">
-                                        <Link href="/subscribe">Subscribe to Create</Link>
-                                    </Button>
-                                )}
+                                </div>
                             </CardContent>
                         </Card>
                     ) : (
-                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            {communities.map((community) => (
-                                <Link key={community.id} href={`/communities/${community.slug}`}>
-                                    <Card className="h-full hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer group">
-                                        <CardHeader>
-                                            <CardTitle className="group-hover:text-primary transition-colors">{community.name}</CardTitle>
-                                            <CardDescription className="line-clamp-2">{community.description}</CardDescription>
-                                        </CardHeader>
+                        <div className="space-y-8">
+                            {memberships?.map((membership) => (
+                                <div key={membership.community.id} className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h2 className="text-2xl font-bold tracking-tight">
+                                                <Link href={`/communities/${membership.community.slug}`} className="hover:underline">
+                                                    {membership.community.name}
+                                                </Link>
+                                            </h2>
+                                            <p className="text-muted-foreground">
+                                                {membership.role === 'community_manager' ? 'Manager Dashboard' : 'Resident Dashboard'}
+                                            </p>
+                                        </div>
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`/communities/${membership.community.slug}`}>
+                                                View Details
+                                            </Link>
+                                        </Button>
+                                    </div>
+
+                                    {['community_manager', 'head_of_security'].includes(membership.role) ? (
+                                        <ManagerSummary
+                                            communityId={membership.community.id}
+                                            communitySlug={membership.community.slug}
+                                        />
+                                    ) : (
+                                        <ResidentSummary
+                                            communityId={membership.community.id}
+                                            communitySlug={membership.community.slug}
+                                            userId={user.id}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Add Community Card */}
+                            <div className="pt-4 border-t">
+                                <Link href="/subscribe?intent=new_community">
+                                    <Card className="border-dashed hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer group flex items-center justify-center min-h-[100px]">
+                                        <CardContent className="flex items-center gap-2 text-muted-foreground group-hover:text-primary py-6">
+                                            <span className="text-2xl">+</span>
+                                            <span className="font-medium">Create Another Community</span>
+                                        </CardContent>
                                     </Card>
                                 </Link>
-                            ))}
+                            </div>
                         </div>
                     )}
                 </div>

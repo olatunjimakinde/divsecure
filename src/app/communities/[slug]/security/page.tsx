@@ -8,6 +8,7 @@ import { AlertCircle, Clock, CheckCircle, MessageSquare, ShieldCheck, Calendar }
 import { clockIn, clockOut } from '../../security/guard-actions'
 import { SecurityForm } from './security-form'
 import { MessageManagerForm } from './message-manager-form'
+import { MessageCenter } from '@/components/messaging/message-center'
 import { GuardList } from '../manager/security/guard-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
@@ -92,6 +93,41 @@ export default async function GuardSecurityPage({
             .order('created_at', { ascending: false })
 
         guards = guardsData
+    }
+
+    // Get Messages
+    const { data: allVisibleMessages } = await supabase
+        .from('security_messages')
+        .select(`
+            *,
+            sender:profiles!sender_id(full_name, email)
+        `)
+        .eq('community_id', community.id)
+        .order('created_at', { ascending: false })
+
+    const inboxMessagesFiltered = allVisibleMessages?.filter(m => m.sender_id !== user.id)
+    const sentMessagesFiltered = allVisibleMessages?.filter(m => m.sender_id === user.id)
+
+    // Get Potential Recipients
+    let potentialRecipients: any[] = []
+
+    if (member.role === 'head_of_security' || member.role === 'community_manager') {
+        // Can message individual guards
+        const { data: guardMembers } = await supabase
+            .from('members')
+            .select(`
+                user_id,
+                role,
+                profiles!user_id(id, full_name, email)
+            `)
+            .eq('community_id', community.id)
+            .in('role', ['guard', 'head_of_security'])
+
+        potentialRecipients = guardMembers?.map(m => ({
+            id: m.profiles.id,
+            name: m.profiles.full_name || m.profiles.email,
+            role: m.role
+        })) || []
     }
 
     return (
@@ -208,7 +244,14 @@ export default async function GuardSecurityPage({
 
                 {/* MESSAGES TAB */}
                 <TabsContent value="messages" className="space-y-4">
-                    <MessageManagerForm slug={slug} />
+                    <MessageCenter
+                        communityId={community.id}
+                        communitySlug={slug}
+                        userRole={member.role}
+                        inboxMessages={inboxMessagesFiltered || []}
+                        sentMessages={sentMessagesFiltered || []}
+                        potentialRecipients={potentialRecipients || []}
+                    />
                 </TabsContent>
 
                 {/* SCHEDULE TAB */}

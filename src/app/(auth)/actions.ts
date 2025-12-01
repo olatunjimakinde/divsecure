@@ -45,7 +45,7 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=${encodeURIComponent('/login?success=Email confirmed. Please login to subscribe.')}`,
             data: {
                 full_name: email.split('@')[0], // Default name from email
                 phone: phone,
@@ -90,41 +90,9 @@ export async function signup(formData: FormData) {
         }
 
     } else if (role === 'manager') {
-        const communitySlug = formData.get('communitySlug') as string
-
-        if (!communityName || !communityAddress || !communitySlug) {
-            console.error('Missing manager fields')
-            return
-        }
-
-        // Create Community
-        const { data: community, error: communityError } = await supabaseAdmin
-            .from('communities')
-            .insert({
-                name: communityName,
-                slug: communitySlug,
-                address: communityAddress,
-                owner_id: authData.user.id
-            })
-            .select()
-            .single()
-
-        if (communityError) {
-            console.error('Error creating community:', communityError)
-            return
-        }
-
-        // Join as Manager (Approved)
-        const { error: memberError } = await supabaseAdmin.from('members').insert({
-            community_id: community.id,
-            user_id: authData.user.id,
-            role: 'community_manager',
-            status: 'approved'
-        })
-
-        if (memberError) {
-            console.error('Error joining as manager:', memberError)
-        }
+        // Manager signup - just create the user, no community yet
+        // They will subscribe and create community later
+        console.log('Manager signed up, redirecting to dashboard for subscription')
     }
 
     revalidatePath('/', 'layout')

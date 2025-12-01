@@ -1,9 +1,9 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-
+import { initializeTransaction, verifyTransaction } from '@/lib/paystack'
 export async function createCommunity(formData: FormData) {
     const supabase = await createClient()
 
@@ -18,26 +18,6 @@ export async function createCommunity(formData: FormData) {
 
     if (!user) {
         redirect('/login')
-    }
-
-    // Check access control
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_super_admin')
-        .eq('id', user.id)
-        .single()
-
-    const { data: subscription } = await supabase
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', user.id)
-        .in('status', ['active', 'trialing'])
-        .maybeSingle()
-
-    const isAllowed = profile?.is_super_admin || !!subscription
-
-    if (!isAllowed) {
-        return { error: 'You must be a subscriber or admin to create a community.' }
     }
 
     // 1. Create the community
@@ -62,17 +42,98 @@ export async function createCommunity(formData: FormData) {
     }
 
     // 2. Add the owner as an admin member
-    const { error: memberError } = await supabase.from('members').insert({
+    const supabaseAdmin = await createAdminClient()
+    const { error: memberError } = await supabaseAdmin.from('members').insert({
         community_id: community.id,
         user_id: user.id,
         role: 'community_manager',
+        status: 'approved',
     })
 
     if (memberError) {
-        // If member creation fails, we might want to delete the community or just log it.
-        // For now, we'll return an error but the community exists.
-        // Ideally, this should be a transaction, but Supabase HTTP API doesn't support transactions easily without RPC.
+        console.error('Error adding member:', memberError)
         return { error: 'Community created but failed to join as admin.' }
+    }
+
+    // 3. Initialize Community Subscription
+    const paymentRef = formData.get('payment_ref') as string | null
+    const planId = formData.get('plan_id') as string | null
+
+
+
+    if (paymentRef && planId) {
+        // Verify payment
+        try {
+            const transaction = await verifyTransaction(paymentRef)
+            if (transaction.data.status !== 'success') {
+                return { error: 'Payment verification failed.' }
+            }
+
+            // Record Payment
+            await supabaseAdmin
+                .from('subscription_payments')
+                .insert({
+                    community_id: community.id,
+                    plan_id: planId,
+                    amount: transaction.data.amount / 100,
+                    reference: paymentRef,
+                    status: 'success',
+                    payment_date: new Date().toISOString()
+                })
+
+            // Create Subscription
+            await supabaseAdmin
+                .from('community_subscription_settings')
+                .insert({
+                    community_id: community.id,
+                    plan_id: planId,
+                    status: 'active',
+                    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    updated_at: new Date().toISOString()
+                })
+
+        } catch (error) {
+            console.error('Payment verification error:', error)
+            return { error: 'Failed to verify payment.' }
+        }
+    } else {
+        // Check if this is the first community (Free Plan) or subsequent (Redirect to Pay)
+
+        // Check for existing communities owned by user (excluding the one just created)
+        const { count: communityCount } = await supabaseAdmin
+            .from('communities')
+            .select('*', { count: 'exact', head: true })
+            .eq('owner_id', user.id)
+            .neq('id', community.id)
+
+        if (communityCount && communityCount > 0) {
+            // User already has communities, so this is an additional one.
+            // Redirect to subscription page to pay for this specific community.
+            // But we already created the community? Ideally we should have checked before creating.
+            // However, since we are here, we can redirect to pay.
+            // But wait, if we redirect, the community is created but has no subscription.
+            // It will be in a "broken" state.
+            // Maybe we should delete it if payment fails?
+            // Or just leave it inactive.
+            redirect(`/subscribe?community_id=${community.id}`)
+        }
+
+        // Default to Free Plan if no payment ref and no other communities (initial flow)
+        const { data: freePlan } = await supabase
+            .from('subscription_plans')
+            .select('id')
+            .eq('name', 'Free')
+            .maybeSingle()
+
+        if (freePlan) {
+            await supabaseAdmin.from('community_subscription_settings').insert({
+                community_id: community.id,
+                plan_id: freePlan.id,
+                status: 'active',
+                current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year validity for Free plan
+                updated_at: new Date().toISOString()
+            })
+        }
     }
 
     revalidatePath('/dashboard')

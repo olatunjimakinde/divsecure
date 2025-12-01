@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { approveResidentCore } from './src/app/communities/[slug]/manager/actions'
-import { changeHouseholdHeadCore } from './src/app/communities/households/actions'
+import { approveResidentCore } from '../../src/app/communities/[slug]/manager/actions'
+import { changeHouseholdHeadCore } from '../../src/app/communities/households/actions'
 
 // Load env vars manually
 try {

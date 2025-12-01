@@ -1,8 +1,7 @@
-
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { inviteMemberToHousehold } from './src/app/communities/households/actions'
+import { inviteMemberToHouseholdCore } from '../../src/app/communities/households/actions'
 
 // Load env vars manually
 try {

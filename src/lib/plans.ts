@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function updatePlan(planId: string, data: { name: string; price: number; features: any }) {
+export async function updatePlan(planId: string, data: { name: string; price: number; features: any; is_popular: boolean }) {
     const supabase = await createClient()
 
     // Check if user is super admin
@@ -31,6 +31,7 @@ export async function updatePlan(planId: string, data: { name: string; price: nu
             name: data.name,
             price: data.price,
             features: data.features,
+            is_popular: data.is_popular,
         })
         .eq('id', planId)
 

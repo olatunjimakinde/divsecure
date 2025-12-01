@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Settings } from 'lucide-react'
+import { Settings, Users, Building2 } from 'lucide-react'
 
 export default async function AdminCommunitiesPage() {
     const supabase = await createClient()
@@ -50,12 +50,26 @@ export default async function AdminCommunitiesPage() {
                                 <TableCell>{community.members[0]?.count || 0}</TableCell>
                                 <TableCell>{new Date(community.created_at).toLocaleDateString()}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon" asChild>
-                                        <Link href={`/admin/communities/${community.id}/features`}>
-                                            <Settings className="h-4 w-4" />
-                                            <span className="sr-only">Manage Features</span>
-                                        </Link>
-                                    </Button>
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="ghost" size="icon" asChild>
+                                            <Link href={`/communities/${community.slug}/manager`}>
+                                                <Building2 className="h-4 w-4" />
+                                                <span className="sr-only">View Dashboard</span>
+                                            </Link>
+                                        </Button>
+                                        <Button variant="ghost" size="icon" asChild>
+                                            <Link href={`/admin/communities/${community.id}/members`}>
+                                                <Users className="h-4 w-4" />
+                                                <span className="sr-only">Manage Managers</span>
+                                            </Link>
+                                        </Button>
+                                        <Button variant="ghost" size="icon" asChild>
+                                            <Link href={`/admin/communities/${community.id}/features`}>
+                                                <Settings className="h-4 w-4" />
+                                                <span className="sr-only">Manage Features</span>
+                                            </Link>
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

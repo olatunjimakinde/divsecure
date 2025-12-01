@@ -89,6 +89,10 @@ export async function setupCommunity(prevState: any, formData: FormData) {
         community = data
     }
 
+    if (!community) {
+        return { error: 'Failed to create or retrieve community.' }
+    }
+
     console.log('Community created:', community.id)
 
     // 3. Join as Manager

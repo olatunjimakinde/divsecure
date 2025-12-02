@@ -18,7 +18,6 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from 'sonner'
-import { createClient } from '@/lib/supabase/server'
 import { AutoLogout } from '@/components/auto-logout'
 
 export default async function RootLayout({
@@ -26,15 +25,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  let user = null
-  try {
-    const supabase = await createClient()
-    const { data } = await supabase.auth.getUser()
-    user = data.user
-  } catch (e) {
-    console.error('RootLayout Error:', e)
-    // Continue rendering without user session if Supabase fails
-  }
+  // Session check moved to client-side AutoLogout component to allow static rendering
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -44,7 +35,7 @@ export default async function RootLayout({
       >
         {children}
         <Toaster />
-        {user && <AutoLogout />}
+        <AutoLogout />
       </body>
     </html>
   );

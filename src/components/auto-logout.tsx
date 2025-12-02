@@ -12,9 +12,9 @@ interface AutoLogoutProps {
 
 export function AutoLogout({ timeoutMs = 15 * 60 * 1000 }: AutoLogoutProps) {
     const timerRef = useRef<NodeJS.Timeout | null>(null)
-    const supabase = createClient()
-
     useEffect(() => {
+        const supabase = createClient()
+
         const checkSession = async () => {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) return
@@ -56,7 +56,7 @@ export function AutoLogout({ timeoutMs = 15 * 60 * 1000 }: AutoLogoutProps) {
         }
 
         checkSession()
-    }, [timeoutMs, supabase])
+    }, [timeoutMs])
 
     return null
 }

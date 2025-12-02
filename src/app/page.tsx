@@ -5,12 +5,18 @@ import { ArrowRight, Shield, Users, Calendar, MessageSquare, Check, Star, Menu }
 import { createClient } from '@/lib/supabase/server'
 
 export default async function LandingPage() {
-  const supabase = await createClient()
-  const { data: plans } = await supabase
-    .from('subscription_plans')
-    .select('*')
-    .eq('is_active', true)
-    .order('price', { ascending: true })
+  let plans = null
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('subscription_plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('price', { ascending: true })
+    plans = data
+  } catch (e) {
+    console.error('LandingPage Error:', e)
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

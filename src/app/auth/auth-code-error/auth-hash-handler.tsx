@@ -7,8 +7,6 @@ import { useRouter } from 'next/navigation'
 export function AuthHashHandler() {
     const [status, setStatus] = useState<string>('')
     const router = useRouter()
-    const supabase = createClient()
-
     useEffect(() => {
         const handleHash = async () => {
             const hash = window.location.hash
@@ -22,6 +20,7 @@ export function AuthHashHandler() {
 
             if (accessToken && refreshToken) {
                 setStatus('Recovering session from link...')
+                const supabase = createClient()
 
                 const { error } = await supabase.auth.setSession({
                     access_token: accessToken,
@@ -44,7 +43,7 @@ export function AuthHashHandler() {
         }
 
         handleHash()
-    }, [router, supabase.auth])
+    }, [router])
 
     if (!status) return null
 

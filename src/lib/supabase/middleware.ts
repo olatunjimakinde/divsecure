@@ -23,7 +23,7 @@ export async function updateSession(request: NextRequest) {
                         return request.cookies.getAll()
                     },
                     setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value, options }) =>
+                        cookiesToSet.forEach(({ name, value }) =>
                             request.cookies.set(name, value)
                         )
                         response = NextResponse.next({
@@ -48,7 +48,9 @@ export async function updateSession(request: NextRequest) {
             !request.nextUrl.pathname.startsWith('/signup') &&
             !request.nextUrl.pathname.startsWith('/auth') &&
             !request.nextUrl.pathname.startsWith('/privacy') &&
-            !request.nextUrl.pathname.startsWith('/terms')
+            !request.nextUrl.pathname.startsWith('/terms') &&
+            !request.nextUrl.pathname.startsWith('/_next') &&
+            !request.nextUrl.pathname.includes('.')
         ) {
             // no user, potentially respond by redirecting the user to the login page
             const url = request.nextUrl.clone()
@@ -57,14 +59,14 @@ export async function updateSession(request: NextRequest) {
         }
 
         // Protect /admin routes
-        if (request.nextUrl.pathname.startsWith('/admin')) {
+        if (request.nextUrl.pathname.startsWith('/admin') && user) {
             const { data: profile } = await supabase
-                .from('profiles' as any)
+                .from('profiles')
                 .select('is_super_admin')
-                .eq('id', user!.id)
+                .eq('id', user.id)
                 .single()
 
-            if (!profile || !(profile as any).is_super_admin) {
+            if (!profile || !profile.is_super_admin) {
                 const url = request.nextUrl.clone()
                 url.pathname = '/dashboard'
                 return NextResponse.redirect(url)

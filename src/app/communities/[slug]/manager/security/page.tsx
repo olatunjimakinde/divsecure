@@ -66,6 +66,27 @@ export default async function ManagerSecurityPage({
         redirect('/dashboard')
     }
 
+    // Verify manager role or super admin
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', community.id)
+        .eq('user_id', user.id)
+        .single()
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_super_admin')
+        .eq('id', user.id)
+        .single()
+
+    const isSuperAdmin = !!profile?.is_super_admin
+    const isManager = member?.role === 'community_manager'
+
+    if (!isManager && !isSuperAdmin) {
+        redirect(`/communities/${slug}`)
+    }
+
     // Get Guards (and Heads)
     const { data: guards } = await supabase
         .from('members')

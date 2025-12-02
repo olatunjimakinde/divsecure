@@ -244,106 +244,116 @@ export default async function CommunityLayout({
                 </div>
             </header>
             <div className="flex flex-1">
-                <aside className="w-64 border-r bg-muted/30 hidden md:block">
-                    <div className="p-4 font-semibold text-sm text-muted-foreground flex items-center justify-between">
-                        <span>Message Boards</span>
-                    </div>
-                    <nav className="px-2 space-y-1">
-                        {channels?.map((channel) => (
-                            <Button
-                                key={channel.id}
-                                variant="ghost"
-                                className="w-full justify-start"
-                                asChild
-                            >
-                                <Link href={`/communities/${slug}/${channel.slug}`}>
-                                    # {channel.name}
-                                </Link>
-                            </Button>
-                        ))}
+                <aside className="w-72 border-r bg-card/50 backdrop-blur-xl hidden md:flex flex-col h-[calc(100vh-4rem)] sticky top-16">
+                    <div className="flex-1 overflow-y-auto py-6 px-4 space-y-6">
+                        {/* Message Boards Section */}
+                        <div>
+                            <div className="px-2 text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-2 flex items-center justify-between">
+                                <span>Message Boards</span>
+                                {isManager && (
+                                    <CreateChannelDialog
+                                        communityId={community.id}
+                                        communitySlug={community.slug}
+                                    />
+                                )}
+                            </div>
+                            <nav className="space-y-1">
+                                {channels?.map((channel) => (
+                                    <Button
+                                        key={channel.id}
+                                        variant="ghost"
+                                        className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all"
+                                        asChild
+                                    >
+                                        <Link href={`/communities/${slug}/${channel.slug}`}>
+                                            <span className="mr-2 text-primary/60">#</span> {channel.name}
+                                        </Link>
+                                    </Button>
+                                ))}
+                            </nav>
+                        </div>
 
+                        {/* Access Section */}
+                        <div>
+                            <div className="px-2 text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-2">
+                                Access & Profile
+                            </div>
+                            <nav className="space-y-1">
+                                {!isGuard && (
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all" asChild>
+                                        <Link href={`/communities/${slug}/visitors`}>
+                                            My Visitors
+                                        </Link>
+                                    </Button>
+                                )}
+
+                                <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all" asChild>
+                                    <Link href={`/communities/${slug}/profile`}>
+                                        My Profile
+                                    </Link>
+                                </Button>
+
+                                {isHouseholdHead && (
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all" asChild>
+                                        <Link href={`/communities/${slug}/household`}>
+                                            My Household
+                                        </Link>
+                                    </Button>
+                                )}
+                            </nav>
+                        </div>
+
+                        {/* Manager Section */}
                         {isManager && (
-                            <div className="pt-2 mt-2 border-t">
-                                <CreateChannelDialog
-                                    communityId={community.id}
-                                    communitySlug={community.slug}
-                                />
+                            <div>
+                                <div className="px-2 text-xs font-semibold text-blue-600/80 uppercase tracking-wider mb-2 mt-2">
+                                    Management
+                                </div>
+                                <nav className="space-y-1">
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                        <Link href={`/communities/${slug}/manager`}>
+                                            Manager Dashboard
+                                        </Link>
+                                    </Button>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                        <Link href={`/communities/${slug}/manager/security`}>
+                                            Security Management
+                                        </Link>
+                                    </Button>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                        <Link href={`/communities/${slug}/manager/settings/features`}>
+                                            Feature Settings
+                                        </Link>
+                                    </Button>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                        <Link href={`/communities/${slug}/manager/settings/billing`}>
+                                            Billing & Subscription
+                                        </Link>
+                                    </Button>
+                                </nav>
                             </div>
                         )}
-                    </nav>
 
-                    <div className="p-4 font-semibold text-sm text-muted-foreground flex items-center justify-between mt-4 border-t pt-4">
-                        <span>Access</span>
-                    </div>
-                    <nav className="px-2 space-y-1">
-                        {!isGuard && (
-                            <Button variant="ghost" className="w-full justify-start" asChild>
-                                <Link href={`/communities/${slug}/visitors`}>
-                                    My Visitors
-                                </Link>
-                            </Button>
-                        )}
-
-                        <Button variant="ghost" className="w-full justify-start" asChild>
-                            <Link href={`/communities/${slug}/profile`}>
-                                My Profile
-                            </Link>
-                        </Button>
-
-                        {isHouseholdHead && (
-                            <Button variant="ghost" className="w-full justify-start" asChild>
-                                <Link href={`/communities/${slug}/household`}>
-                                    My Household
-                                </Link>
-                            </Button>
-                        )}
-
-                        {/* Manager Dashboard */}
-                        {isManager && (
-                            <>
-                                <Button variant="ghost" className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
-                                    <Link href={`/communities/${slug}/manager`}>
-                                        Manager Dashboard
-                                    </Link>
-                                </Button>
-                                <Button variant="ghost" className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
-                                    <Link href={`/communities/${slug}/manager/security`}>
-                                        Security Management
-                                    </Link>
-                                </Button>
-                                <Button variant="ghost" className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
-                                    <Link href={`/communities/${slug}/manager/settings/features`}>
-                                        Feature Settings
-                                    </Link>
-                                </Button>
-                                <Button variant="ghost" className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50" asChild>
-                                    <Link href={`/communities/${slug}/manager/settings/billing`}>
-                                        Billing & Subscription
-                                    </Link>
-                                </Button>
-                            </>
-                        )}
-
-                        {/* Security Section - Only for managers/guards */}
+                        {/* Security Section */}
                         {(isManager || isGuard) && (
-                            <>
-                                <div className="p-4 font-semibold text-sm text-muted-foreground flex items-center justify-between mt-4 border-t pt-4">
-                                    <span>Security</span>
+                            <div>
+                                <div className="px-2 text-xs font-semibold text-red-600/80 uppercase tracking-wider mb-2 mt-2">
+                                    Security
                                 </div>
-                                <nav className="px-2 space-y-1">
-                                    <Button variant="ghost" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" asChild>
+                                <nav className="space-y-1">
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-red-600 hover:bg-red-50 hover:shadow-sm transition-all" asChild>
                                         <Link href={`/communities/${slug}/security`}>
                                             Security Station
                                         </Link>
                                     </Button>
                                 </nav>
-                            </>
+                            </div>
                         )}
+                    </div>
 
-                        <div className="pt-4 mt-4 border-t">
-                            <SignOutButton />
-                        </div>
-                    </nav>
+                    <div className="p-4 border-t bg-muted/20">
+                        <SignOutButton />
+                    </div>
                 </aside>
                 <main className="flex-1 p-4 lg:p-8 mb-16 md:mb-0 pb-20 md:pb-8">
                     <SubscriptionEnforcer

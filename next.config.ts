@@ -15,6 +15,9 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   /* config options here */
   turbopack: {},
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'lodash', 'recharts', '@radix-ui/react-icons'],
+  },
 };
 
 export default withPWA(nextConfig);

@@ -49,7 +49,16 @@ export default async function ManagerDashboardPage({
         .eq('user_id', user.id)
         .single()
 
-    if (member?.role !== 'community_manager') {
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_super_admin')
+        .eq('id', user.id)
+        .single()
+
+    const isSuperAdmin = !!profile?.is_super_admin
+    const isManager = member?.role === 'community_manager'
+
+    if (!isManager && !isSuperAdmin) {
         redirect(`/communities/${slug}`)
     }
 
@@ -122,7 +131,7 @@ export default async function ManagerDashboardPage({
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Manager Dashboard</h1>
@@ -134,14 +143,14 @@ export default async function ManagerDashboardPage({
             </div>
 
             <Tabs defaultValue="residents" className="space-y-4">
-                <TabsList>
+                <TabsList className="animate-in fade-in slide-in-from-left-4 duration-500 delay-100">
                     <TabsTrigger value="residents">Residents</TabsTrigger>
                     <TabsTrigger value="guards">Security Guards</TabsTrigger>
                     <TabsTrigger value="households">Households</TabsTrigger>
                     <TabsTrigger value="visitors">Visitor Logs</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="residents" className="space-y-4">
+                <TabsContent value="residents" className="space-y-4 animate-in zoom-in-95 duration-500">
                     <Card>
                         <CardHeader>
                             <CardTitle>Residents</CardTitle>
@@ -155,7 +164,7 @@ export default async function ManagerDashboardPage({
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="guards" className="space-y-4">
+                <TabsContent value="guards" className="space-y-4 animate-in zoom-in-95 duration-500">
                     <Card>
                         <CardHeader>
                             <CardTitle>Security Guards</CardTitle>
@@ -169,7 +178,7 @@ export default async function ManagerDashboardPage({
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="households" className="space-y-4">
+                <TabsContent value="households" className="space-y-4 animate-in zoom-in-95 duration-500">
                     <Card>
                         <CardHeader>
                             <CardTitle>Households</CardTitle>
@@ -188,7 +197,7 @@ export default async function ManagerDashboardPage({
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="visitors" className="space-y-4">
+                <TabsContent value="visitors" className="space-y-4 animate-in zoom-in-95 duration-500">
                     <Card>
                         <CardHeader>
                             <CardTitle>Visitor Logs</CardTitle>

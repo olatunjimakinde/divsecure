@@ -92,7 +92,7 @@ export default async function VisitorsPage({
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">My Visitors</h1>
@@ -116,15 +116,18 @@ export default async function VisitorsPage({
 
                 <TabsContent value="active" className="space-y-4">
                     {codes?.length === 0 ? (
-                        <Card className="text-center py-12">
+                        <Card className="text-center py-16 border-dashed border-2 bg-muted/10 hover:bg-muted/20 transition-colors animate-in zoom-in-95 duration-500">
                             <CardHeader>
-                                <CardTitle>No active codes</CardTitle>
-                                <CardDescription>
-                                    You haven&apos;t generated any visitor codes yet.
+                                <div className="mx-auto bg-primary/10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 ring-1 ring-primary/20">
+                                    <Car className="h-8 w-8 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">No active codes</CardTitle>
+                                <CardDescription className="max-w-sm mx-auto mt-2">
+                                    You haven&apos;t generated any visitor codes yet. Create one to allow guest entry.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <Button asChild variant="outline">
+                                <Button asChild variant="default" className="rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
                                     <Link href={`/communities/${slug}/visitors/new`}>
                                         Generate your first code
                                     </Link>

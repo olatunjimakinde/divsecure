@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -79,11 +80,17 @@ export default async function MyHouseholdPage({
 
     if (!member || !member.is_household_head || !member.households) {
         return (
-            <div className="p-8 text-center">
-                <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-                <p className="text-muted-foreground">
+            <div className="flex flex-col items-center justify-center py-16 text-center space-y-4 animate-in zoom-in-95 duration-500">
+                <div className="bg-destructive/10 p-4 rounded-full ring-1 ring-destructive/20">
+                    <Ban className="h-8 w-8 text-destructive" />
+                </div>
+                <h1 className="text-2xl font-bold tracking-tight">Access Denied</h1>
+                <p className="text-muted-foreground max-w-md">
                     You must be a designated Head of Household to view this page.
                 </p>
+                <Button asChild variant="outline" className="mt-4">
+                    <Link href={`/communities/${slug}/profile`}>Back to Profile</Link>
+                </Button>
             </div>
         )
     }
@@ -92,7 +99,7 @@ export default async function MyHouseholdPage({
     const members = household.members || []
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">My Household</h1>
                 <p className="text-muted-foreground">

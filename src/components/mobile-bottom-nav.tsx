@@ -11,18 +11,18 @@ export function MobileBottomNav() {
     const links = [
         {
             href: '/dashboard',
-            label: 'Dashboard',
+            label: 'Home',
             icon: LayoutDashboard,
             active: pathname === '/dashboard'
         },
         {
-            href: '/communities/create', // Or a list view
+            href: '/dashboard', // Using dashboard as communities list for now
             label: 'Communities',
             icon: Building2,
-            active: pathname.includes('/communities') && !pathname.includes('/profile')
+            active: false // It's the same page as home
         },
         {
-            href: '/profile', // We might need a global profile page or link to settings
+            href: '/profile',
             label: 'Profile',
             icon: User,
             active: pathname.includes('/profile')

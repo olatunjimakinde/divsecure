@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowRight, Shield, Users, Calendar, MessageSquare, Check, Star, Menu } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600 // Revalidate every hour
 
 export default async function LandingPage() {
   let plans = null
@@ -68,7 +68,7 @@ export default async function LandingPage() {
               <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
               v2.0 is now live
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl mx-auto mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 drop-shadow-sm">
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl mx-auto mb-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 drop-shadow-sm">
               Modern Management for <br className="hidden sm:block" />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-purple-600 animate-gradient-x">Secure Communities</span>
             </h1>

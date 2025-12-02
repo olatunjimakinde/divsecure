@@ -23,21 +23,25 @@ export default async function ProfilePage({
         redirect('/login')
     }
 
-    const { data: community } = await supabase
-        .from('communities')
-        .select('id, name')
-        .eq('slug', slug)
-        .single()
+    const [communityResult, profileResult] = await Promise.all([
+        supabase
+            .from('communities')
+            .select('id, name')
+            .eq('slug', slug)
+            .single(),
+        supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+    ])
+
+    const community = communityResult.data
+    const profile = profileResult.data
 
     if (!community) {
         notFound()
     }
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
 
     return (
         <div className="space-y-6 max-w-2xl">

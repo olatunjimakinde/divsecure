@@ -11,6 +11,7 @@ export async function createClient() {
         if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) missing.push('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
         console.error(`Supabase Server Client Error: Missing environment variables: ${missing.join(', ')}`)
+        console.error('Available Environment Variables:', Object.keys(process.env).join(', '))
         throw new Error(`Missing Supabase environment variables: ${missing.join(', ')}`)
     }
 

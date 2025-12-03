@@ -4,13 +4,26 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { initializeTransaction, verifyTransaction } from '@/lib/paystack'
+import { createCommunitySchema } from '@/lib/schemas'
 export async function createCommunity(formData: FormData) {
     const supabase = await createClient()
 
-    const name = formData.get('name') as string
-    const slug = formData.get('slug') as string
-    const description = formData.get('description') as string
-    const address = formData.get('address') as string
+    const rawData = {
+        name: formData.get('name') as string,
+        slug: formData.get('slug') as string,
+        description: formData.get('description') as string,
+        address: formData.get('address') as string,
+        payment_ref: formData.get('payment_ref') as string,
+        plan_id: formData.get('plan_id') as string,
+    }
+
+    const validation = createCommunitySchema.safeParse(rawData)
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message }
+    }
+
+    const { name, slug, description, address, payment_ref, plan_id } = validation.data
 
     const {
         data: { user },
@@ -56,8 +69,8 @@ export async function createCommunity(formData: FormData) {
     }
 
     // 3. Initialize Community Subscription
-    const paymentRef = formData.get('payment_ref') as string | null
-    const planId = formData.get('plan_id') as string | null
+    const paymentRef = payment_ref
+    const planId = plan_id
 
 
 

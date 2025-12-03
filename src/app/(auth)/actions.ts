@@ -3,12 +3,24 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { loginSchema, signupSchema } from '@/lib/schemas'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
+    const rawData = {
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+    }
+
+    const validation = loginSchema.safeParse(rawData)
+
+    if (!validation.success) {
+        const errorMessage = validation.error.issues[0].message
+        redirect('/login?message=' + encodeURIComponent(errorMessage))
+    }
+
+    const { email, password } = validation.data
 
     const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -27,18 +39,25 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
     const supabase = await createClient()
 
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const phone = formData.get('phone') as string
-    const role = formData.get('role') as string
+    const rawData = {
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+        phone: formData.get('phone') as string,
+        role: formData.get('role') as string,
+        communityId: formData.get('communityId') as string,
+        unitNumber: formData.get('unitNumber') as string,
+        communityName: formData.get('communityName') as string,
+        communityAddress: formData.get('communityAddress') as string,
+    }
 
-    // Resident fields
-    const communityId = formData.get('communityId') as string
-    const unitNumber = formData.get('unitNumber') as string
+    const validation = signupSchema.safeParse(rawData)
 
-    // Manager fields
-    const communityName = formData.get('communityName') as string
-    const communityAddress = formData.get('communityAddress') as string
+    if (!validation.success) {
+        const errorMessage = validation.error.issues[0].message
+        redirect('/signup?message=' + encodeURIComponent(errorMessage))
+    }
+
+    const { email, password, phone, role, communityId, unitNumber } = validation.data
 
     // 1. Create Auth User
     const { data: authData, error: authError } = await supabase.auth.signUp({

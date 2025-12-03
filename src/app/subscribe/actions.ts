@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { initializeTransaction } from '@/lib/paystack'
+import { getURL } from '@/lib/utils'
 
 export async function subscribeToPlan(formData: FormData) {
     const supabase = await createClient()
@@ -53,8 +54,8 @@ export async function subscribeToPlan(formData: FormData) {
     // Paid plan, initialize Paystack transaction
     try {
         const callbackUrl = intent === 'new_community'
-            ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/communities/setup`
-            : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard?payment=success`
+            ? `${getURL()}communities/setup`
+            : `${getURL()}dashboard?payment=success`
 
         console.log('Paystack Callback URL:', callbackUrl)
 

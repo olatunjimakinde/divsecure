@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { loginSchema, signupSchema } from '@/lib/schemas'
+import { getURL } from '@/lib/utils'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -64,7 +65,7 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=${encodeURIComponent('/login?success=Email confirmed. Please login to subscribe.')}`,
+            emailRedirectTo: `${getURL()}auth/callback?next=${encodeURIComponent('/login?success=Email confirmed. Please login to subscribe.')}`,
             data: {
                 full_name: email.split('@')[0], // Default name from email
                 phone: phone,
@@ -130,7 +131,7 @@ export async function signInWithGoogle() {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+            redirectTo: `${getURL()}auth/callback`,
         },
     })
 

@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { getURL } from '@/lib/utils'
 
 export default function ForgotPasswordPage() {
     async function resetPassword(formData: FormData) {
@@ -13,7 +14,7 @@ export default function ForgotPasswordPage() {
         const supabase = await createClient()
 
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=/reset-password`,
+            redirectTo: `${getURL()}auth/callback?next=/reset-password`,
         })
 
         if (error) {

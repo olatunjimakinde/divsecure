@@ -68,19 +68,19 @@ export default async function DashboardLayout({
             <div className="flex flex-col flex-1 overflow-hidden mb-16 md:mb-0">
                 <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
                     <MobileSidebar>
-                        <nav className="grid items-start px-2 text-sm font-medium lg:px-4 py-4 gap-2">
+                        <nav className="grid items-start px-2 text-base font-semibold lg:px-4 py-2 gap-1">
                             <Link
                                 href="/dashboard"
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                                className="flex items-center gap-3 rounded-xl px-3 py-3 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
                             >
-                                <LayoutDashboard className="h-4 w-4" />
+                                <LayoutDashboard className="h-5 w-5" />
                                 Dashboard
                             </Link>
                             <Link
                                 href="/profile"
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                                className="flex items-center gap-3 rounded-xl px-3 py-3 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
                             >
-                                <User className="h-4 w-4" />
+                                <User className="h-5 w-5" />
                                 Profile
                             </Link>
                             <div className="mt-auto p-4 border-t">

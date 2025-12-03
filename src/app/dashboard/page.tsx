@@ -71,19 +71,19 @@ export default async function DashboardPage() {
                     </div>
 
                     {memberships?.length === 0 ? (
-                        <Card className="text-center py-16 border-dashed border-2 bg-muted/10 hover:bg-muted/20 transition-colors animate-in zoom-in-95 duration-500">
+                        <Card className="text-center py-12 border-dashed border-2 bg-muted/10 hover:bg-muted/20 transition-colors animate-in zoom-in-95 duration-500 rounded-2xl">
                             <CardHeader>
-                                <div className="mx-auto bg-primary/10 p-4 rounded-full w-20 h-20 flex items-center justify-center mb-4 ring-1 ring-primary/20">
-                                    <Building2 className="h-10 w-10 text-primary" />
+                                <div className="mx-auto bg-primary/10 p-6 rounded-full w-24 h-24 flex items-center justify-center mb-6 ring-1 ring-primary/20">
+                                    <Building2 className="h-12 w-12 text-primary" />
                                 </div>
-                                <CardTitle className="text-2xl">No Communities Yet</CardTitle>
-                                <CardDescription className="text-base max-w-sm mx-auto mt-2">
+                                <CardTitle className="text-2xl font-bold">No Communities Yet</CardTitle>
+                                <CardDescription className="text-base max-w-sm mx-auto mt-3 leading-relaxed">
                                     You haven&apos;t joined or created any communities. Get started by subscribing to a plan.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="flex flex-col items-center gap-4 mt-4">
-                                    <Button asChild variant="default" size="lg" className="rounded-full px-8 shadow-xl shadow-primary/20 hover:scale-105 transition-transform">
+                                <div className="flex flex-col items-center gap-4 mt-6">
+                                    <Button asChild variant="default" size="lg" className="rounded-xl px-8 h-14 text-lg shadow-xl shadow-primary/20 hover:scale-105 transition-transform w-full sm:w-auto">
                                         <Link href="/subscribe?intent=new_community">Create Your First Community</Link>
                                     </Button>
                                 </div>
@@ -92,23 +92,23 @@ export default async function DashboardPage() {
                     ) : (
                         <div className="space-y-8">
                             {memberships?.map((membership) => (
-                                <div key={membership.community.id} className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h2 className="text-2xl font-bold tracking-tight">
-                                                <Link href={`/communities/${membership.community.slug}`} className="hover:underline">
-                                                    {membership.community.name}
-                                                </Link>
-                                            </h2>
-                                            <p className="text-muted-foreground">
+                                <div key={membership.community.id} className="space-y-6">
+                                    <div className="flex flex-col gap-2">
+                                        <h2 className="text-2xl font-bold tracking-tight">
+                                            <Link href={`/communities/${membership.community.slug}`} className="hover:underline">
+                                                {membership.community.name}
+                                            </Link>
+                                        </h2>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-muted-foreground text-base">
                                                 {membership.role === 'community_manager' ? 'Manager Dashboard' : 'Resident Dashboard'}
                                             </p>
+                                            <Button variant="outline" size="sm" asChild className="rounded-lg h-10 px-4">
+                                                <Link href={`/communities/${membership.community.slug}`}>
+                                                    View Details
+                                                </Link>
+                                            </Button>
                                         </div>
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/communities/${membership.community.slug}`}>
-                                                View Details
-                                            </Link>
-                                        </Button>
                                     </div>
 
                                     {['community_manager', 'head_of_security'].includes(membership.role) ? (
@@ -127,12 +127,12 @@ export default async function DashboardPage() {
                             ))}
 
                             {/* Add Community Card */}
-                            <div className="pt-4 border-t">
+                            <div className="pt-6 border-t">
                                 <Link href="/subscribe?intent=new_community">
-                                    <Card className="border-dashed hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer group flex items-center justify-center min-h-[100px]">
-                                        <CardContent className="flex items-center gap-2 text-muted-foreground group-hover:text-primary py-6">
-                                            <span className="text-2xl">+</span>
-                                            <span className="font-medium">Create Another Community</span>
+                                    <Card className="border-dashed hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer group flex items-center justify-center min-h-[120px] rounded-2xl">
+                                        <CardContent className="flex items-center gap-3 text-muted-foreground group-hover:text-primary py-8">
+                                            <span className="text-3xl font-light">+</span>
+                                            <span className="font-semibold text-lg">Create Another Community</span>
                                         </CardContent>
                                     </Card>
                                 </Link>

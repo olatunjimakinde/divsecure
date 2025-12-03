@@ -30,18 +30,18 @@ export function MobileBottomNav() {
     ]
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-lg md:hidden">
-            <nav className="flex items-center justify-around h-16">
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-lg md:hidden pb-safe">
+            <nav className="flex items-center justify-around h-[65px] pt-1.5">
                 {links.map((link) => (
                     <Link
                         key={link.href}
                         href={link.href}
                         className={cn(
-                            "flex flex-col items-center justify-center w-full h-full gap-1 text-xs font-medium transition-colors",
+                            "flex flex-col items-center justify-center w-full h-full gap-1.5 text-xs font-semibold transition-colors",
                             link.active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                         )}
                     >
-                        <link.icon className="h-5 w-5" />
+                        <link.icon className="h-7 w-7" />
                         <span>{link.label}</span>
                     </Link>
                 ))}

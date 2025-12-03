@@ -60,7 +60,7 @@ export function SignupForm({ communities }: { communities: Community[] }) {
     return (
         <div className="grid gap-4">
             <Tabs defaultValue="household" onValueChange={(v) => setRole(v as 'household' | 'manager')}>
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl">
                     <TabsTrigger value="household">Household</TabsTrigger>
                     <TabsTrigger value="manager">Manager</TabsTrigger>
                 </TabsList>
@@ -174,7 +174,7 @@ export function SignupForm({ communities }: { communities: Community[] }) {
 function SubmitButton() {
     const { pending } = useFormStatus()
     return (
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button type="submit" className="w-full h-12 rounded-xl mt-6" disabled={pending}>
             {pending ? 'Creating Account...' : 'Create Account'}
         </Button>
     )

@@ -6,6 +6,7 @@ import { LayoutDashboard, Building2, User } from 'lucide-react'
 import { SignOutButton } from '@/components/sign-out-button'
 import { MobileBottomNav } from '@/components/mobile-bottom-nav'
 import { MobileSidebar } from '@/components/mobile-sidebar'
+import { PWAInstallPrompt } from '@/components/pwa-install-prompt'
 import Image from 'next/image'
 
 export default async function DashboardLayout({
@@ -28,14 +29,11 @@ export default async function DashboardLayout({
             {/* Sidebar - Hidden on Mobile */}
             {/* Sidebar - Hidden on Mobile */}
             <aside className="hidden w-72 flex-col border-r bg-card/50 backdrop-blur-xl md:flex">
-                <div className="flex h-16 items-center border-b px-6">
+                <div className="flex h-16 items-center border-b px-6 justify-center">
                     <Link href="/dashboard" className="flex items-center gap-3 font-semibold hover:opacity-80 transition-opacity">
-                        <div className="relative h-9 w-9 overflow-hidden rounded-xl bg-primary/10 p-1.5 ring-1 ring-primary/20">
-                            <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-contain" />
+                        <div className="relative h-10 w-10">
+                            <Image src="/logo.png" alt="DivSecure Logo" fill className="object-contain" />
                         </div>
-                        <span className="text-lg tracking-tight">
-                            <span className="font-bold text-primary">Div</span>secure
-                        </span>
                     </Link>
                 </div>
                 <div className="flex-1 overflow-y-auto py-6 px-4">
@@ -92,7 +90,8 @@ export default async function DashboardLayout({
                         {/* Breadcrumbs or Title could go here */}
                     </div>
                     <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium">Welcome, {user.email}</span>
+                        <PWAInstallPrompt />
+                        <span className="text-sm font-medium hidden sm:inline-block">Welcome, {user.email}</span>
                     </div>
                 </header>
                 <main className="flex-1 overflow-y-auto p-4 lg:p-6">

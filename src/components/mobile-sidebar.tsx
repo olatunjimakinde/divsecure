@@ -28,12 +28,9 @@ export function MobileSidebar({ children, className }: MobileSidebarProps) {
                 <div className="flex flex-col h-full">
                     <div className="flex h-14 items-center border-b px-6 lg:h-[60px]">
                         <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setOpen(false)}>
-                            <div className="relative h-8 w-8">
-                                <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-contain" />
+                            <div className="relative h-10 w-10">
+                                <Image src="/logo.png" alt="DivSecure Logo" fill className="object-contain" />
                             </div>
-                            <span className="">
-                                <span className="font-bold">Div</span>secure
-                            </span>
                         </Link>
                     </div>
                     <div className="flex-1 overflow-auto py-4" onClick={(e) => {

@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "DivSecure Community",
   description: "Secure community management platform",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

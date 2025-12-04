@@ -19,7 +19,7 @@ interface CommunitySidebarChannelsProps {
 }
 
 export function CommunitySidebarChannels({ communitySlug, channels }: CommunitySidebarChannelsProps) {
-    const [isOpen, setIsOpen] = useState(true)
+    const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
 
     if (!channels || channels.length === 0) return null

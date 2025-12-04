@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import { CreatePostForm } from '../../posts/create-post-form'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { EditChannelDialog } from '../../edit-channel-dialog'
+import { PostItem } from '../../posts/post-item'
 
 export default async function ChannelPage({
     params,
@@ -119,19 +120,14 @@ export default async function ChannelPage({
                     </div>
                 ) : (
                     posts?.map((post) => (
-                        <Card key={post.id} className="border-none shadow-none bg-transparent">
-                            <CardHeader className="p-0 pb-1">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold">{post.user?.full_name || 'Unknown User'}</span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {new Date(post.created_at).toLocaleString()}
-                                    </span>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <p className="whitespace-pre-wrap">{post.content}</p>
-                            </CardContent>
-                        </Card>
+                        <PostItem
+                            key={post.id}
+                            post={post}
+                            currentUserId={user?.id}
+                            isManager={isManager}
+                            communitySlug={slug}
+                            channelSlug={channelSlug}
+                        />
                     ))
                 )}
             </div>

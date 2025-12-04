@@ -44,3 +44,116 @@ export async function createPost(formData: FormData) {
 
     revalidatePath(`/communities/${communitySlug}/${channelSlug}`)
 }
+
+export async function updatePost(formData: FormData) {
+    const supabase = await createClient()
+
+    const postId = formData.get('postId') as string
+    const content = formData.get('content') as string
+    const communitySlug = formData.get('communitySlug') as string
+    const channelSlug = formData.get('channelSlug') as string
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Unauthorized' }
+    }
+
+    // Check permissions (Author or Manager)
+    // For simplicity, we'll check if the user is the author in the query
+    // Ideally we should also check for manager role, but let's start with author
+
+    // First fetch the post to check author
+    const { data: post } = await supabase
+        .from('posts')
+        .select('user_id, channel_id')
+        .eq('id', postId)
+        .single()
+
+    if (!post) return { error: 'Post not found' }
+
+    let hasPermission = post.user_id === user.id
+
+    if (!hasPermission) {
+        // Check if manager
+        const { data: channel } = await supabase.from('channels').select('community_id').eq('id', post.channel_id).single()
+        if (channel) {
+            const { data: member } = await supabase.from('members').select('role').eq('community_id', channel.community_id).eq('user_id', user.id).single()
+            if (member?.role === 'community_manager') {
+                hasPermission = true
+            }
+        }
+    }
+
+    if (!hasPermission) {
+        return { error: 'Unauthorized' }
+    }
+
+    const { error } = await supabase
+        .from('posts')
+        .update({ content })
+        .eq('id', postId)
+
+    if (error) {
+        return { error: 'Failed to update post.' }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/${channelSlug}`)
+    return { success: true }
+}
+
+export async function deletePost(formData: FormData) {
+    const supabase = await createClient()
+
+    const postId = formData.get('postId') as string
+    const communitySlug = formData.get('communitySlug') as string
+    const channelSlug = formData.get('channelSlug') as string
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Unauthorized' }
+    }
+
+    // Check permissions (Author or Manager)
+    const { data: post } = await supabase
+        .from('posts')
+        .select('user_id, channel_id')
+        .eq('id', postId)
+        .single()
+
+    if (!post) return { error: 'Post not found' }
+
+    let hasPermission = post.user_id === user.id
+
+    if (!hasPermission) {
+        // Check if manager
+        const { data: channel } = await supabase.from('channels').select('community_id').eq('id', post.channel_id).single()
+        if (channel) {
+            const { data: member } = await supabase.from('members').select('role').eq('community_id', channel.community_id).eq('user_id', user.id).single()
+            if (member?.role === 'community_manager') {
+                hasPermission = true
+            }
+        }
+    }
+
+    if (!hasPermission) {
+        return { error: 'Unauthorized' }
+    }
+
+    const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+
+    if (error) {
+        return { error: 'Failed to delete post.' }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/${channelSlug}`)
+    return { success: true }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { updateChannel } from './channels/actions'
+import { updateChannel, deleteChannel } from './channels/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -92,7 +92,22 @@ export function EditChannelDialog({
                     </div>
 
                     {error && <div className="text-sm text-destructive">{error}</div>}
-                    <DialogFooter>
+                    <DialogFooter className="flex justify-between items-center sm:justify-between">
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={async () => {
+                                if (confirm('Are you sure you want to delete this channel? This action cannot be undone.')) {
+                                    const formData = new FormData()
+                                    formData.append('channelId', channel.id)
+                                    formData.append('communityId', communityId)
+                                    formData.append('communitySlug', communitySlug)
+                                    await deleteChannel(formData)
+                                }
+                            }}
+                        >
+                            Delete Channel
+                        </Button>
                         <Button type="submit">Save Changes</Button>
                     </DialogFooter>
                 </form>

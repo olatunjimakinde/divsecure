@@ -1,6 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from 'sonner'
+import { LoadingBar } from '@/components/loading-bar'
+import { Suspense } from 'react'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,30 +30,26 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport = {
-  themeColor: "#000000",
+export const viewport: Viewport = {
+  themeColor: "#FFFFFF",
 };
 
-import { Toaster } from 'sonner'
-import { AutoLogout } from '@/components/auto-logout'
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
-  // Session check moved to client-side AutoLogout component to allow static rendering
-
+}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
       >
+        <Suspense fallback={null}>
+          <LoadingBar />
+        </Suspense>
         {children}
         <Toaster />
-        <AutoLogout />
       </body>
     </html>
-  );
+  )
 }

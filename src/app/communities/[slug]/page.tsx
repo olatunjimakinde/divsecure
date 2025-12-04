@@ -27,6 +27,36 @@ export default async function CommunityPage({
         notFound()
     }
 
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+        const { data: member } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', community.id)
+            .eq('user_id', user.id)
+            .single()
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_super_admin')
+            .eq('id', user.id)
+            .single()
+
+        const isSuperAdmin = !!profile?.is_super_admin
+        const isManager = member?.role === 'community_manager' || isSuperAdmin
+        const isGuard = member?.role ? ['guard', 'head_of_security'].includes(member.role) : false
+        const isResident = member?.role === 'resident'
+
+        if (isManager) {
+            redirect(`/communities/${slug}/manager`)
+        } else if (isGuard) {
+            redirect(`/communities/${slug}/security`)
+        } else if (isResident) {
+            redirect(`/communities/${slug}/visitors`)
+        }
+    }
+
     // Sort channels in JS since we can't easily order nested relation in single query without complex syntax
     // or we can trust the default order if it was inserted sequentially, but better to be safe.
     // Actually, for a redirect, any channel is fine, but usually the first one.

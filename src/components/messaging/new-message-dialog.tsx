@@ -48,6 +48,7 @@ export function NewMessageDialog({ communityId, communitySlug, userRole, potenti
     const [recipientId, setRecipientId] = useState<string>('')
     const [subject, setSubject] = useState('')
     const [content, setContent] = useState('')
+    const [category, setCategory] = useState('General')
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -58,6 +59,7 @@ export function NewMessageDialog({ communityId, communitySlug, userRole, potenti
         formData.append('communitySlug', communitySlug)
         formData.append('subject', subject)
         formData.append('content', content)
+        formData.append('category', category)
         formData.append('recipientType', recipientType)
 
         if (recipientType === 'group') {
@@ -80,6 +82,7 @@ export function NewMessageDialog({ communityId, communitySlug, userRole, potenti
             // Reset form
             setSubject('')
             setContent('')
+            setCategory('General')
             setRecipientGroup('')
             setRecipientId('')
         }
@@ -181,6 +184,24 @@ export function NewMessageDialog({ communityId, communitySlug, userRole, potenti
                                 required
                             />
                         </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="category">Category</Label>
+                            <Select
+                                value={category}
+                                onValueChange={setCategory}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="General">General</SelectItem>
+                                    <SelectItem value="Announcement">Announcement</SelectItem>
+                                    <SelectItem value="Alert">Alert</SelectItem>
+                                    <SelectItem value="Maintenance">Maintenance</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="content">Message</Label>
                             <Textarea

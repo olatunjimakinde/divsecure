@@ -8,6 +8,7 @@ export async function sendMessageToManager(formData: FormData) {
     const communitySlug = formData.get('communitySlug') as string
     const subject = formData.get('subject') as string
     const content = formData.get('content') as string
+    const category = formData.get('category') as string || 'General'
 
     // Get Community ID
     const { data: community } = await supabase
@@ -27,7 +28,8 @@ export async function sendMessageToManager(formData: FormData) {
             community_id: community.id,
             sender_id: user.id,
             subject,
-            content
+            content,
+            category
         })
 
     if (error) {

@@ -9,6 +9,7 @@ import { MobileCommunityNav } from '@/components/mobile-community-nav'
 import { MobileSidebar } from '@/components/mobile-sidebar'
 import { Building2 } from 'lucide-react'
 import { SubscriptionEnforcer } from '@/components/subscription-enforcer'
+import { CommunitySidebarChannels } from '@/components/community-sidebar-channels'
 
 export default async function CommunityLayout({
     children,
@@ -258,18 +259,12 @@ export default async function CommunityLayout({
                                 )}
                             </div>
                             <nav className="space-y-1">
-                                {channels?.map((channel) => (
-                                    <Button
-                                        key={channel.id}
-                                        variant="ghost"
-                                        className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all"
-                                        asChild
-                                    >
-                                        <Link href={`/communities/${slug}/${channel.slug}`}>
-                                            <span className="mr-2 text-primary/60">#</span> {channel.name}
-                                        </Link>
-                                    </Button>
-                                ))}
+                                <nav className="space-y-1">
+                                    <CommunitySidebarChannels
+                                        communitySlug={community.slug}
+                                        channels={channels || []}
+                                    />
+                                </nav>
                             </nav>
                         </div>
 

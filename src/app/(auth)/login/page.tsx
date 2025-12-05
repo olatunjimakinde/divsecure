@@ -1,5 +1,6 @@
 import { login, signInWithGoogle, signInAsDemoUser } from '../actions'
 import { Button } from '@/components/ui/button'
+import { SubmitButton } from '@/components/submit-button'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
 import Link from 'next/link'
@@ -66,7 +67,7 @@ export default async function LoginPage(props: {
                     </div>
                 )}
 
-                <Button formAction={login} className="w-full h-12 rounded-xl mt-4">Log In</Button>
+                <SubmitButton formAction={login} className="w-full h-12 rounded-xl mt-4">Log In</SubmitButton>
             </form>
 
             <p className="text-sm mt-8 text-muted-foreground">

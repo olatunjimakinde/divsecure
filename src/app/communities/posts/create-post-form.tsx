@@ -9,20 +9,29 @@ export function CreatePostForm({
     channelId,
     communitySlug,
     channelSlug,
+    onOptimisticAdd
 }: {
     channelId: string
     communitySlug: string
     channelSlug: string
+    onOptimisticAdd?: (content: string) => void
 }) {
     const [error, setError] = useState<string | null>(null)
     const formRef = useRef<HTMLFormElement>(null)
 
     async function handleSubmit(formData: FormData) {
+        const content = formData.get('content') as string
+        if (!content.trim()) return
+
+        // Optimistic Update
+        onOptimisticAdd?.(content)
+        formRef.current?.reset()
+
         const result = await createPost(formData)
         if (result?.error) {
             setError(result.error)
+            // Ideally revert optimistic update here if possible, or show error toast
         } else {
-            formRef.current?.reset()
             setError(null)
         }
     }

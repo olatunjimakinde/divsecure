@@ -19,9 +19,19 @@ interface PostItemProps {
     isManager: boolean
     communitySlug: string
     channelSlug: string
+    onOptimisticUpdate?: (postId: string, content: string) => void
+    onOptimisticDelete?: (postId: string) => void
 }
 
-export function PostItem({ post, currentUserId, isManager, communitySlug, channelSlug }: PostItemProps) {
+export function PostItem({
+    post,
+    currentUserId,
+    isManager,
+    communitySlug,
+    channelSlug,
+    onOptimisticUpdate,
+    onOptimisticDelete
+}: PostItemProps) {
     const [isEditing, setIsEditing] = useState(false)
     const [editContent, setEditContent] = useState(post.content)
     const [isSaving, setIsSaving] = useState(false)
@@ -33,6 +43,10 @@ export function PostItem({ post, currentUserId, isManager, communitySlug, channe
         if (!editContent.trim()) return
         setIsSaving(true)
 
+        // Optimistic Update
+        onOptimisticUpdate?.(post.id, editContent)
+        setIsEditing(false)
+
         const formData = new FormData()
         formData.append('postId', post.id)
         formData.append('content', editContent)
@@ -41,11 +55,13 @@ export function PostItem({ post, currentUserId, isManager, communitySlug, channe
 
         await updatePost(formData)
         setIsSaving(false)
-        setIsEditing(false)
     }
 
     async function handleDelete() {
         if (!confirm('Are you sure you want to delete this message?')) return
+
+        // Optimistic Delete
+        onOptimisticDelete?.(post.id)
 
         const formData = new FormData()
         formData.append('postId', post.id)

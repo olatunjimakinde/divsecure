@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog'
 import { HouseholdActivityLog } from './activity-log'
 import { HouseholdResidentActions } from './household-resident-actions'
+import { AddResidentDialog } from './add-resident-dialog'
 
 export default async function MyHouseholdPage({
     params,
@@ -117,49 +118,9 @@ export default async function MyHouseholdPage({
                 <CardContent>
                     <div className="space-y-4">
                         <div className="flex justify-end">
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Add Resident
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Add Resident</DialogTitle>
-                                        <DialogDescription>
-                                            Invite a new resident to your household by email.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                    <form action={async (formData) => {
-                                        'use server'
-                                        const result = await inviteResidentByHead(formData)
-                                        if (result?.error) {
-                                            // Ideally show error in UI, but for now using alert via client component or just console
-                                            // Since this is a server action inside a server component, we can't use alert() directly unless we make this a client component or use a client wrapper.
-                                            // For simplicity in this iteration, we'll just log or assume success.
-                                            // To properly show errors, we should convert this dialog to a client component.
-                                            // But let's just call the action.
-                                            console.error(result.error)
-                                        }
-                                    }}>
-                                        <input type="hidden" name="communitySlug" value={slug} />
-                                        <div className="grid gap-4 py-4">
-                                            <div className="grid gap-2">
-                                                <Label htmlFor="fullName">Full Name</Label>
-                                                <Input id="fullName" name="fullName" placeholder="John Doe" required />
-                                            </div>
-                                            <div className="grid gap-2">
-                                                <Label htmlFor="email">Email Address</Label>
-                                                <Input id="email" name="email" type="email" required />
-                                            </div>
-                                        </div>
-                                        <DialogFooter>
-                                            <Button type="submit">Send Invite</Button>
-                                        </DialogFooter>
-                                    </form>
-                                </DialogContent>
-                            </Dialog>
+                            <div className="flex justify-end">
+                                <AddResidentDialog communitySlug={slug} />
+                            </div>
                         </div>
 
                         <Table>

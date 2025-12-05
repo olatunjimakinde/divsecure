@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
-import { CreatePostForm } from '../../posts/create-post-form'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { EditChannelDialog } from '../../edit-channel-dialog'
-import { PostItem } from '../../posts/post-item'
+import { PostFeed } from '../../posts/post-feed'
 
 export default async function ChannelPage({
     params,
@@ -112,37 +110,17 @@ export default async function ChannelPage({
                 )}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-4 p-4">
-                {posts?.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-12">
-                        <h3 className="text-lg font-semibold">Welcome to #{channel.name}!</h3>
-                        <p>This is the start of the #{channel.name} message board.</p>
-                    </div>
-                ) : (
-                    posts?.map((post) => (
-                        <PostItem
-                            key={post.id}
-                            post={post}
-                            currentUserId={user?.id}
-                            isManager={isManager}
-                            communitySlug={slug}
-                            channelSlug={channelSlug}
-                        />
-                    ))
-                )}
-            </div>
-            <div className="p-4 border-t bg-background">
-                {canReply ? (
-                    <CreatePostForm
-                        channelId={channel.id}
-                        communitySlug={slug}
-                        channelSlug={channelSlug}
-                    />
-                ) : (
-                    <div className="text-center text-muted-foreground text-sm italic">
-                        This board is read-only.
-                    </div>
-                )}
+            <div className="flex-1 overflow-hidden">
+                <PostFeed
+                    initialPosts={posts || []}
+                    currentUserId={user?.id}
+                    currentUserProfile={member ? { full_name: user?.user_metadata?.full_name, avatar_url: null } : null}
+                    isManager={isManager}
+                    communitySlug={slug}
+                    channelSlug={channelSlug}
+                    channelId={channel.id}
+                    canReply={canReply}
+                />
             </div>
         </div>
     )

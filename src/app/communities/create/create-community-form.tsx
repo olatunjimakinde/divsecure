@@ -2,6 +2,7 @@
 
 import { createCommunity } from '../actions'
 import { Button } from '@/components/ui/button'
+import { SubmitButton } from '@/components/submit-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -53,9 +54,9 @@ export function CreateCommunityForm({ paymentRef, planId }: { paymentRef?: strin
                         </div>
                     )}
 
-                    <Button type="submit" className="w-full">
+                    <SubmitButton className="w-full">
                         Create Community
-                    </Button>
+                    </SubmitButton>
                 </form>
             </CardContent>
         </Card>

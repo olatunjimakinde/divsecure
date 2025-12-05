@@ -2,6 +2,7 @@
 
 import { createChannel } from './channels/actions'
 import { Button } from '@/components/ui/button'
+import { SubmitButton } from '@/components/submit-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -87,7 +88,7 @@ export function CreateChannelDialog({
 
                     {error && <div className="text-sm text-destructive">{error}</div>}
                     <DialogFooter>
-                        <Button type="submit">Create Message Board</Button>
+                        <SubmitButton>Create Message Board</SubmitButton>
                     </DialogFooter>
                 </form>
             </DialogContent>

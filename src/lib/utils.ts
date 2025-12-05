@@ -17,5 +17,10 @@ export function getURL() {
   url = url.includes('http') ? url : `https://${url}`
   // Make sure to include a trailing `/`.
   url = url.charAt(url.length - 1) === '/' ? url : `${url}/`
+
+  if (typeof window === 'undefined') {
+    console.log('getURL resolved to:', url)
+  }
+
   return url
 }

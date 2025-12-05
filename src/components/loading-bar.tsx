@@ -15,10 +15,33 @@ export function LoadingBar() {
 
     useEffect(() => {
         NProgress.done()
-        return () => {
-            NProgress.start()
-        }
     }, [pathname, searchParams])
+
+    useEffect(() => {
+        const handleClick = (e: MouseEvent) => {
+            const target = e.target as HTMLElement
+            const anchor = target.closest('a')
+
+            if (anchor) {
+                const href = anchor.getAttribute('href')
+                const targetAttr = anchor.getAttribute('target')
+
+                // Ignore external links, new tabs, or anchor links on the same page
+                if (
+                    href &&
+                    href.startsWith('/') &&
+                    targetAttr !== '_blank' &&
+                    !href.startsWith('#') &&
+                    href !== pathname
+                ) {
+                    NProgress.start()
+                }
+            }
+        }
+
+        document.addEventListener('click', handleClick)
+        return () => document.removeEventListener('click', handleClick)
+    }, [pathname])
 
     return null
 }

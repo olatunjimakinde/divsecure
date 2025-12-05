@@ -25,6 +25,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { signup } from '../actions'
+import { SubmitButton } from '@/components/submit-button'
 
 type Community = {
     id: string
@@ -164,18 +165,11 @@ export function SignupForm({ communities }: { communities: Community[] }) {
                         </div>
                     )}
 
-                    <SubmitButton />
+                    <SubmitButton className="w-full h-12 rounded-xl mt-6" pendingText="Creating Account...">
+                        Create Account
+                    </SubmitButton>
                 </form>
             </Tabs>
         </div>
-    )
-}
-
-function SubmitButton() {
-    const { pending } = useFormStatus()
-    return (
-        <Button type="submit" className="w-full h-12 rounded-xl mt-6" disabled={pending}>
-            {pending ? 'Creating Account...' : 'Create Account'}
-        </Button>
     )
 }

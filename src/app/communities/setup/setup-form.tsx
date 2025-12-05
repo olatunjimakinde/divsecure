@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { setupCommunity } from './actions'
+import { SubmitButton } from '@/components/submit-button'
 
 const initialState = {
     error: '',
@@ -79,16 +80,9 @@ export function SetupCommunityForm({ reference, planId }: { reference?: string, 
                 <Input id="communityAddress" name="communityAddress" placeholder="123 Main St" required />
             </div>
 
-            <SubmitButton />
+            <SubmitButton className="w-full" pendingText="Creating Community...">
+                Complete Setup
+            </SubmitButton>
         </form>
-    )
-}
-
-function SubmitButton() {
-    const { pending } = useFormStatus()
-    return (
-        <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? 'Creating Community...' : 'Complete Setup'}
-        </Button>
     )
 }

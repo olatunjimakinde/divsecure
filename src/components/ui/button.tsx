@@ -49,10 +49,21 @@ function Button({
     asChild?: boolean
     loading?: boolean
   }) {
-  const Comp = asChild ? Slot : "button"
+  if (asChild) {
+    return (
+      <Slot
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        disabled={props.disabled || loading}
+        {...props}
+      >
+        {children}
+      </Slot>
+    )
+  }
 
   return (
-    <Comp
+    <button
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       disabled={props.disabled || loading}
@@ -81,7 +92,7 @@ function Button({
         </svg>
       )}
       {children}
-    </Comp>
+    </button>
   )
 }
 

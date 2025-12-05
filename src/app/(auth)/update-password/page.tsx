@@ -1,48 +1,49 @@
 
 import { updatePassword } from '../actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { SubmitButton } from '@/components/submit-button'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Image from 'next/image'
 
 export default function UpdatePasswordPage() {
     return (
-        <div className="flex h-screen w-full items-center justify-center px-4">
-            <Card className="mx-auto max-w-sm">
-                <CardHeader>
-                    <CardTitle className="text-2xl">Set Password</CardTitle>
-                    <CardDescription>
-                        Please set a new password for your account.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form action={updatePassword} className="grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">New Password</Label>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                minLength={6}
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="confirmPassword">Confirm Password</Label>
-                            <Input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                type="password"
-                                required
-                                minLength={6}
-                            />
-                        </div>
-                        <Button type="submit" className="w-full">
-                            Update Password
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+        <div className="flex flex-col items-center justify-center w-full px-5 pt-10 max-w-md mx-auto min-h-screen bg-background">
+            <div className="flex flex-col items-center w-full mb-8">
+                <Image src="/logo.png" alt="Divsecure" width={120} height={120} className="mb-6" priority />
+                <h1 className="text-2xl font-bold text-foreground">Set Password</h1>
+                <p className="text-muted-foreground text-sm">Please set a new password for your account</p>
+            </div>
+
+            <form action={updatePassword} className="w-full space-y-4">
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="password">New Password</Label>
+                        <PasswordInput
+                            id="password"
+                            name="password"
+                            placeholder="Enter new password"
+                            required
+                            minLength={6}
+                            className="h-12 rounded-xl"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <PasswordInput
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            placeholder="Confirm new password"
+                            required
+                            minLength={6}
+                            className="h-12 rounded-xl"
+                        />
+                    </div>
+                </div>
+
+                <SubmitButton className="w-full h-12 rounded-xl mt-6">
+                    Update Password
+                </SubmitButton>
+            </form>
         </div>
     )
 }

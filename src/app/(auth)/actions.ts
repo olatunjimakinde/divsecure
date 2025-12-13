@@ -79,7 +79,6 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
-            emailRedirectTo: `${getURL()}auth/callback?next=${encodeURIComponent('/login?success=Email confirmed. Please login to subscribe.')}`,
             data: {
                 full_name: email.split('@')[0], // Default name from email
                 phone: phone,
@@ -130,7 +129,32 @@ export async function signup(formData: FormData) {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/login?success=Please check your email to confirm your account.')
+    redirect(`/verify-email?email=${encodeURIComponent(email)}`)
+}
+
+export async function verifyEmailOtp(formData: FormData) {
+    const supabase = await createClient()
+
+    const email = formData.get('email') as string
+    const token = formData.get('code') as string
+
+    if (!email || !token) {
+        redirect('/verify-email?error=Missing email or code')
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'signup',
+    })
+
+    if (error) {
+        console.error('Error verifying OTP:', error)
+        redirect(`/verify-email?email=${encodeURIComponent(email)}&error=${encodeURIComponent(error.message)}`)
+    }
+
+    revalidatePath('/', 'layout')
+    redirect('/dashboard')
 }
 
 export async function signout() {

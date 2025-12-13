@@ -17,6 +17,9 @@ export default function AuthCodeErrorPage() {
             <Button asChild>
                 <Link href="/login">Back to Login</Link>
             </Button>
+            <Button asChild variant="outline">
+                <Link href="/verify-email">Enter Code Manually</Link>
+            </Button>
             <Suspense fallback={null}>
                 <DebugUrl />
             </Suspense>

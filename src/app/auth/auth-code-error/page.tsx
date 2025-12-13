@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { DebugUrl } from './debug-url'
@@ -10,11 +11,15 @@ export default function AuthCodeErrorPage() {
             <p className="text-muted-foreground max-w-md">
                 There was a problem verifying your identity. The link may have expired or is invalid.
             </p>
-            <AuthHashHandler />
+            <Suspense fallback={null}>
+                <AuthHashHandler />
+            </Suspense>
             <Button asChild>
                 <Link href="/login">Back to Login</Link>
             </Button>
-            <DebugUrl />
+            <Suspense fallback={null}>
+                <DebugUrl />
+            </Suspense>
         </div>
     )
 }

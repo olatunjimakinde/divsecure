@@ -219,7 +219,7 @@ export async function inviteResidentByHead(formData: FormData) {
     if (!userId) {
         // User doesn't exist. Invite them.
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${getURL()}auth/callback?next=${encodeURIComponent('/update-password')}`
+            redirectTo: `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
         })
 
         if (inviteError) {

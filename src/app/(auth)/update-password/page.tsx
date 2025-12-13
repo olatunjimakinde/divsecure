@@ -5,7 +5,10 @@ import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import Image from 'next/image'
 
-export default function UpdatePasswordPage() {
+export default async function UpdatePasswordPage(props: {
+    searchParams: Promise<{ error: string }>
+}) {
+    const searchParams = await props.searchParams
     return (
         <div className="flex flex-col items-center justify-center w-full px-5 pt-10 max-w-md mx-auto min-h-screen bg-background">
             <div className="flex flex-col items-center w-full mb-8">
@@ -39,6 +42,12 @@ export default function UpdatePasswordPage() {
                         />
                     </div>
                 </div>
+
+                {searchParams?.error && (
+                    <div className="text-destructive text-sm text-center">
+                        {searchParams.error}
+                    </div>
+                )}
 
                 <SubmitButton className="w-full h-12 rounded-xl mt-6">
                     Update Password

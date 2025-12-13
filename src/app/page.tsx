@@ -136,7 +136,7 @@ export default async function LandingPage() {
         <section id="testimonials" className="py-24 overflow-hidden">
           <div className="container px-4 md:px-6">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-12 text-center">Loved by Communities</h2>
-            <div className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory -mx-4 px-4 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0">
+            <div className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory w-full md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0">
               <TestimonialCard
                 quote="Divsecure transformed how we manage visitors. It's so easy to use, even for our older residents."
                 author="Sarah J."

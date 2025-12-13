@@ -1,112 +1,64 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ShieldCheck } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-function AuthConfirmContent() {
-    const router = useRouter()
+function ConfirmPageContent() {
     const searchParams = useSearchParams()
-    const [error, setError] = useState<string | null>(null)
+    const code = searchParams.get('code')
+    const next = searchParams.get('next') || '/'
 
-    useEffect(() => {
-        const handleAuth = async () => {
-            const supabase = createClient()
+    // Construct the callback URL
+    // We need to pass the code and next param to the callback route
+    const callbackUrl = `/auth/callback?code=${code}&next=${encodeURIComponent(next)}`
 
-            // 1. Check for hash fragment (Implicit Flow)
-            const hash = window.location.hash
-            if (hash && hash.includes('access_token')) {
-                try {
-                    const { data: { session }, error } = await supabase.auth.getSession()
-
-                    if (error) throw error
-
-                    if (session) {
-                        // Success! Redirect.
-                        const next = searchParams.get('next') || '/dashboard'
-                        router.push(next)
-                        return
-                    }
-                } catch (e: any) {
-                    console.error('Error processing hash:', e)
-                    setError(e.message)
-                }
-            }
-
-            // 2. Fallback: Check if we are already logged in (maybe the cookie was set by a previous step?)
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                const next = searchParams.get('next') || '/dashboard'
-                router.push(next)
-                return
-            }
-
-            // If we are here, we might have failed to get the session.
-            // Let's try to manually set the session if automatic detection failed but we have the hash.
-            if (hash && hash.includes('access_token')) {
-                // Extract tokens
-                const params = new URLSearchParams(hash.substring(1)) // remove #
-                const accessToken = params.get('access_token')
-                const refreshToken = params.get('refresh_token')
-
-                if (accessToken && refreshToken) {
-                    const { error } = await supabase.auth.setSession({
-                        access_token: accessToken,
-                        refresh_token: refreshToken
-                    })
-
-                    if (!error) {
-                        const next = searchParams.get('next') || '/dashboard'
-                        router.push(next)
-                        return
-                    } else {
-                        setError(error.message)
-                    }
-                }
-            } else {
-                // No hash, and not logged in.
-                // Maybe redirected here without params?
-                setError('Invalid authentication link.')
-            }
-        }
-
-        handleAuth()
-    }, [router, searchParams])
-
-    if (error) {
+    if (!code) {
         return (
-            <div className="flex h-screen w-full flex-col items-center justify-center gap-4 px-4 text-center">
-                <h1 className="text-2xl font-bold text-destructive">Authentication Failed</h1>
-                <p className="text-muted-foreground">{error}</p>
-                <button
-                    onClick={() => router.push('/login')}
-                    className="text-sm underline"
-                >
-                    Back to Login
-                </button>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                            <ShieldCheck className="h-6 w-6 text-destructive" />
+                        </div>
+                        <CardTitle>Invalid Link</CardTitle>
+                        <CardDescription>
+                            This invitation link appears to be invalid or missing the verification code.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
             </div>
         )
     }
 
     return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-muted-foreground">Verifying...</p>
-            </div>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                        <ShieldCheck className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>Security Check</CardTitle>
+                    <CardDescription>
+                        To protect your account, please click the button below to verify your invitation.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild className="w-full" size="lg">
+                        <a href={callbackUrl}>Verify & Continue</a>
+                    </Button>
+                </CardContent>
+            </Card>
         </div>
     )
 }
 
-export default function AuthConfirmPage() {
+export default function ConfirmPage() {
     return (
-        <Suspense fallback={
-            <div className="flex h-screen w-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        }>
-            <AuthConfirmContent />
+        <Suspense fallback={<div>Loading...</div>}>
+            <ConfirmPageContent />
         </Suspense>
     )
 }

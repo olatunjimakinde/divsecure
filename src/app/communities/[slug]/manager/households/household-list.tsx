@@ -207,7 +207,7 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
             </Dialog>
 
 
-            <div className="rounded-md border">
+            <div className="rounded-md border hidden md:block">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -312,6 +312,97 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                         )}
                     </TableBody>
                 </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="grid gap-4 md:hidden">
+                {households.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground border rounded-lg bg-muted/20">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                            <p>No households found.</p>
+                            <div className="flex gap-2">
+                                <Button variant="outline" onClick={() => setIsBulkCreateOpen(true)}>
+                                    Bulk Create
+                                </Button>
+                                <Button onClick={() => setIsCreateOpen(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Create First Household
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    households.map((household) => (
+                        <div key={household.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
+                            <div className="flex items-start justify-between">
+                                <div className="space-y-1">
+                                    <div className="font-semibold">{household.name}</div>
+                                    <div className="text-sm text-muted-foreground">{household.contact_email || '-'}</div>
+                                </div>
+                                <Badge variant={household.status === 'active' ? 'default' : 'destructive'}>
+                                    {household.status}
+                                </Badge>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-sm">
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <span>{household.member_count} Residents</span>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-2 pt-2 border-t mt-2 flex-wrap">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() => setManagingHousehold(household)}
+                                >
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Residents
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setEditingHousehold(household)}
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className={household.status === 'active' ? "text-orange-500 hover:text-orange-600" : "text-green-500 hover:text-green-600"}
+                                    onClick={() => setConfirmation({
+                                        isOpen: true,
+                                        type: household.status === 'active' ? 'suspend' : 'activate',
+                                        id: household.id,
+                                        title: household.status === 'active' ? 'Suspend Household' : 'Activate Household',
+                                        description: household.status === 'active'
+                                            ? 'Are you sure you want to suspend this household? Residents will lose access.'
+                                            : 'Are you sure you want to activate this household?'
+                                    })}
+                                >
+                                    {household.status === 'active' ? <Ban className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={() => setConfirmation({
+                                        isOpen: true,
+                                        type: 'delete',
+                                        id: household.id,
+                                        title: 'Delete Household',
+                                        description: 'Are you sure? This will unassign all residents and delete the household permanently.'
+                                    })}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Create Dialog */}

@@ -132,7 +132,7 @@ export default async function ManagerDashboardPage({
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Manager Dashboard</h1>
                     <p className="text-muted-foreground">
@@ -143,12 +143,14 @@ export default async function ManagerDashboardPage({
             </div>
 
             <Tabs defaultValue="residents" className="space-y-4">
-                <TabsList className="animate-in fade-in slide-in-from-left-4 duration-500 delay-100">
-                    <TabsTrigger value="residents">Residents</TabsTrigger>
-                    <TabsTrigger value="guards">Security Guards</TabsTrigger>
-                    <TabsTrigger value="households">Households</TabsTrigger>
-                    <TabsTrigger value="visitors">Visitor Logs</TabsTrigger>
-                </TabsList>
+                <div className="w-full overflow-x-auto pb-2">
+                    <TabsList className="w-full justify-start">
+                        <TabsTrigger value="residents">Residents</TabsTrigger>
+                        <TabsTrigger value="guards">Security Guards</TabsTrigger>
+                        <TabsTrigger value="households">Households</TabsTrigger>
+                        <TabsTrigger value="visitors">Visitor Logs</TabsTrigger>
+                    </TabsList>
+                </div>
 
                 <TabsContent value="residents" className="space-y-4 animate-in zoom-in-95 duration-500">
                     <Card>

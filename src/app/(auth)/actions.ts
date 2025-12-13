@@ -10,8 +10,8 @@ export async function login(formData: FormData) {
     const supabase = await createClient()
 
     const rawData = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
+        email: formData.get('email') as string || undefined,
+        password: formData.get('password') as string || undefined,
     }
 
     const validation = loginSchema.safeParse(rawData)
@@ -41,15 +41,17 @@ export async function signup(formData: FormData) {
     const supabase = await createClient()
 
     const rawData = {
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-        phone: formData.get('phone') as string,
-        role: formData.get('role') as string,
-        communityId: formData.get('communityId') as string,
-        unitNumber: formData.get('unitNumber') as string,
-        communityName: formData.get('communityName') as string,
-        communityAddress: formData.get('communityAddress') as string,
+        email: formData.get('email') as string || undefined,
+        password: formData.get('password') as string || undefined,
+        phone: formData.get('phone') as string || undefined,
+        role: formData.get('role') as string || undefined,
+        communityId: formData.get('communityId') || undefined,
+        unitNumber: formData.get('unitNumber') || undefined,
+        communityName: formData.get('communityName') || undefined,
+        communityAddress: formData.get('communityAddress') || undefined,
     }
+
+    console.log('DEBUG SIGNUP RAW DATA:', JSON.stringify(rawData, null, 2))
 
     const validation = signupSchema.safeParse(rawData)
 
@@ -162,8 +164,8 @@ export async function signInAsDemoUser() {
 export async function updatePassword(formData: FormData) {
     const supabase = await createClient()
 
-    const password = formData.get('password') as string
-    const confirmPassword = formData.get('confirmPassword') as string
+    const password = formData.get('password') as string || ''
+    const confirmPassword = formData.get('confirmPassword') as string || ''
 
     if (password !== confirmPassword) {
         redirect('/update-password?error=Passwords do not match')

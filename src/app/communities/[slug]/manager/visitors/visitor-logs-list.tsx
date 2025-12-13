@@ -60,64 +60,109 @@ export async function VisitorLogsList({
     }
 
     return (
-        <div className="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Time</TableHead>
-                        <TableHead>Visitor</TableHead>
-                        <TableHead>Host</TableHead>
-                        <TableHead>Vehicle</TableHead>
-                        <TableHead>Entry Point</TableHead>
-                        <TableHead>Verified By</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {logs.map((log: any) => (
-                        <TableRow key={log.id}>
-                            <TableCell>
-                                <div className="flex flex-col">
-                                    <span className="font-medium">
-                                        {new Date(log.entered_at).toLocaleDateString()}
+        <>
+            <div className="rounded-md border hidden md:block">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Time</TableHead>
+                            <TableHead>Visitor</TableHead>
+                            <TableHead>Host</TableHead>
+                            <TableHead>Vehicle</TableHead>
+                            <TableHead>Entry Point</TableHead>
+                            <TableHead>Verified By</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {logs.map((log: any) => (
+                            <TableRow key={log.id}>
+                                <TableCell>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">
+                                            {new Date(log.entered_at).toLocaleDateString()}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(log.entered_at).toLocaleTimeString()}
+                                        </span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="font-medium">{log.visitor_codes.visitor_name}</div>
+                                    <div className="text-xs text-muted-foreground font-mono">
+                                        {log.visitor_codes.access_code}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="text-sm">
+                                        {log.visitor_codes.host?.full_name || 'Unknown'}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {log.visitor_codes.host?.email}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    {log.visitor_codes.vehicle_plate ? (
+                                        <Badge variant="outline" className="font-mono">
+                                            {log.visitor_codes.vehicle_plate}
+                                        </Badge>
+                                    ) : (
+                                        <span className="text-muted-foreground">-</span>
+                                    )}
+                                </TableCell>
+                                <TableCell>{log.entry_point || 'Main Gate'}</TableCell>
+                                <TableCell>
+                                    <span className="text-sm text-muted-foreground">
+                                        {log.guard?.full_name || 'System'}
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {new Date(log.entered_at).toLocaleTimeString()}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="font-medium">{log.visitor_codes.visitor_name}</div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="grid gap-4 md:hidden">
+                {logs.map((log: any) => (
+                    <div key={log.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                                <div className="font-semibold">{log.visitor_codes.visitor_name}</div>
                                 <div className="text-xs text-muted-foreground font-mono">
                                     {log.visitor_codes.access_code}
                                 </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="text-sm">
-                                    {log.visitor_codes.host?.full_name || 'Unknown'}
+                            </div>
+                            <div className="text-right">
+                                <div className="font-medium text-sm">
+                                    {new Date(log.entered_at).toLocaleDateString()}
                                 </div>
                                 <div className="text-xs text-muted-foreground">
-                                    {log.visitor_codes.host?.email}
+                                    {new Date(log.entered_at).toLocaleTimeString()}
                                 </div>
-                            </TableCell>
-                            <TableCell>
-                                {log.visitor_codes.vehicle_plate ? (
-                                    <Badge variant="outline" className="font-mono">
-                                        {log.visitor_codes.vehicle_plate}
-                                    </Badge>
-                                ) : (
-                                    <span className="text-muted-foreground">-</span>
-                                )}
-                            </TableCell>
-                            <TableCell>{log.entry_point || 'Main Gate'}</TableCell>
-                            <TableCell>
-                                <span className="text-sm text-muted-foreground">
-                                    {log.guard?.full_name || 'System'}
-                                </span>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="flex flex-col">
+                                <span className="text-muted-foreground text-xs">Host</span>
+                                <span>{log.visitor_codes.host?.full_name || 'Unknown'}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-muted-foreground text-xs">Vehicle</span>
+                                <span>{log.visitor_codes.vehicle_plate || '-'}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-muted-foreground text-xs">Entry Point</span>
+                                <span>{log.entry_point || 'Main Gate'}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-muted-foreground text-xs">Verified By</span>
+                                <span>{log.guard?.full_name || 'System'}</span>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </>
     )
 }

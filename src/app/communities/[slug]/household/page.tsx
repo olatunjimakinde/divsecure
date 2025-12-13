@@ -123,72 +123,135 @@ export default async function MyHouseholdPage({
                             </div>
                         </div>
 
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Role</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {members.map((m: any) => (
-                                    <TableRow key={m.id}>
-                                        <TableCell>{m.profiles?.full_name || 'Unknown'}</TableCell>
-                                        <TableCell>{m.profiles?.email}</TableCell>
-                                        <TableCell>
-                                            {m.is_household_head ? 'Head' : 'Resident'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={m.status === 'approved' ? 'default' : 'destructive'}>
-                                                {m.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            {!m.is_household_head && (
-                                                <div className="flex justify-end gap-2">
-                                                    <Dialog>
-                                                        <DialogTrigger asChild>
-                                                            <Button variant="ghost" size="icon" title="Edit">
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Button>
-                                                        </DialogTrigger>
-                                                        <DialogContent>
-                                                            <DialogHeader>
-                                                                <DialogTitle>Edit Resident</DialogTitle>
-                                                            </DialogHeader>
-                                                            <form action={async (formData) => {
-                                                                'use server'
-                                                                await updateResidentByHead(formData)
-                                                            }}>
-                                                                <input type="hidden" name="memberId" value={m.id} />
-                                                                <input type="hidden" name="communitySlug" value={slug} />
-                                                                <div className="grid gap-4 py-4">
-                                                                    <div className="grid gap-2">
-                                                                        <Label htmlFor={`name-${m.id}`}>Full Name</Label>
-                                                                        <Input id={`name-${m.id}`} name="fullName" defaultValue={m.profiles?.full_name} />
-                                                                    </div>
-                                                                </div>
-                                                                <DialogFooter>
-                                                                    <Button type="submit">Save Changes</Button>
-                                                                </DialogFooter>
-                                                            </form>
-                                                        </DialogContent>
-                                                    </Dialog>
-                                                    <HouseholdResidentActions
-                                                        memberId={m.id}
-                                                        communitySlug={slug}
-                                                        status={m.status}
-                                                    />
-                                                </div>
-                                            )}
-                                        </TableCell>
+                        <div className="rounded-md border hidden md:block">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Role</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {members.map((m: any) => (
+                                        <TableRow key={m.id}>
+                                            <TableCell>{m.profiles?.full_name || 'Unknown'}</TableCell>
+                                            <TableCell>{m.profiles?.email}</TableCell>
+                                            <TableCell>
+                                                {m.is_household_head ? 'Head' : 'Resident'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={m.status === 'approved' ? 'default' : 'destructive'}>
+                                                    {m.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {!m.is_household_head && (
+                                                    <div className="flex justify-end gap-2">
+                                                        <Dialog>
+                                                            <DialogTrigger asChild>
+                                                                <Button variant="ghost" size="icon" title="Edit">
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                            <DialogContent>
+                                                                <DialogHeader>
+                                                                    <DialogTitle>Edit Resident</DialogTitle>
+                                                                </DialogHeader>
+                                                                <form action={async (formData) => {
+                                                                    'use server'
+                                                                    await updateResidentByHead(formData)
+                                                                }}>
+                                                                    <input type="hidden" name="memberId" value={m.id} />
+                                                                    <input type="hidden" name="communitySlug" value={slug} />
+                                                                    <div className="grid gap-4 py-4">
+                                                                        <div className="grid gap-2">
+                                                                            <Label htmlFor={`name-${m.id}`}>Full Name</Label>
+                                                                            <Input id={`name-${m.id}`} name="fullName" defaultValue={m.profiles?.full_name} />
+                                                                        </div>
+                                                                    </div>
+                                                                    <DialogFooter>
+                                                                        <Button type="submit">Save Changes</Button>
+                                                                    </DialogFooter>
+                                                                </form>
+                                                            </DialogContent>
+                                                        </Dialog>
+                                                        <HouseholdResidentActions
+                                                            memberId={m.id}
+                                                            communitySlug={slug}
+                                                            status={m.status}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="grid gap-4 md:hidden">
+                            {members.map((m: any) => (
+                                <div key={m.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
+                                    <div className="flex items-start justify-between">
+                                        <div className="space-y-1">
+                                            <div className="font-semibold">{m.profiles?.full_name || 'Unknown'}</div>
+                                            <div className="text-sm text-muted-foreground">{m.profiles?.email}</div>
+                                        </div>
+                                        <Badge variant={m.status === 'approved' ? 'default' : 'destructive'}>
+                                            {m.status}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <span className="text-muted-foreground">Role:</span>
+                                        <span>{m.is_household_head ? 'Head' : 'Resident'}</span>
+                                    </div>
+
+                                    {!m.is_household_head && (
+                                        <div className="flex items-center justify-end gap-2 pt-2 border-t mt-2">
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="ghost" size="sm" className="flex-1">
+                                                        <Pencil className="mr-2 h-4 w-4" />
+                                                        Edit
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>Edit Resident</DialogTitle>
+                                                    </DialogHeader>
+                                                    <form action={async (formData) => {
+                                                        'use server'
+                                                        await updateResidentByHead(formData)
+                                                    }}>
+                                                        <input type="hidden" name="memberId" value={m.id} />
+                                                        <input type="hidden" name="communitySlug" value={slug} />
+                                                        <div className="grid gap-4 py-4">
+                                                            <div className="grid gap-2">
+                                                                <Label htmlFor={`name-${m.id}`}>Full Name</Label>
+                                                                <Input id={`name-${m.id}`} name="fullName" defaultValue={m.profiles?.full_name} />
+                                                            </div>
+                                                        </div>
+                                                        <DialogFooter>
+                                                            <Button type="submit">Save Changes</Button>
+                                                        </DialogFooter>
+                                                    </form>
+                                                </DialogContent>
+                                            </Dialog>
+                                            <HouseholdResidentActions
+                                                memberId={m.id}
+                                                communitySlug={slug}
+                                                status={m.status}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </CardContent>
             </Card>

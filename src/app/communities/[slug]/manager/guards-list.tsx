@@ -34,28 +34,50 @@ export async function GuardsList({ communityId, searchQuery }: { communityId: st
             <div className="flex justify-end">
                 <AddGuardDialog communityId={communityId} />
             </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {guards.map((guard) => (
-                        <TableRow key={guard.id}>
-                            <TableCell className="font-medium">{guard.profiles?.full_name || 'Unknown'}</TableCell>
-                            <TableCell>{guard.profiles?.email}</TableCell>
-                            <TableCell>{new Date(guard.created_at).toLocaleDateString()}</TableCell>
-                            <TableCell className="text-right">
-                                <RemoveGuardButton memberId={guard.id} communityId={communityId} />
-                            </TableCell>
+            <div className="rounded-md border hidden md:block">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Joined</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {guards.map((guard) => (
+                            <TableRow key={guard.id}>
+                                <TableCell className="font-medium">{guard.profiles?.full_name || 'Unknown'}</TableCell>
+                                <TableCell>{guard.profiles?.email}</TableCell>
+                                <TableCell>{new Date(guard.created_at).toLocaleDateString()}</TableCell>
+                                <TableCell className="text-right">
+                                    <RemoveGuardButton memberId={guard.id} communityId={communityId} />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="grid gap-4 md:hidden">
+                {guards.map((guard) => (
+                    <div key={guard.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
+                        <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                                <div className="font-semibold">{guard.profiles?.full_name || 'Unknown'}</div>
+                                <div className="text-sm text-muted-foreground">{guard.profiles?.email}</div>
+                            </div>
+                            <RemoveGuardButton memberId={guard.id} communityId={communityId} />
+                        </div>
+
+                        <div className="flex flex-col text-sm">
+                            <span className="text-muted-foreground text-xs">Joined</span>
+                            <span>{new Date(guard.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }

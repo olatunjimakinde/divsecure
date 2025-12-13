@@ -19,6 +19,8 @@ export function AuthHashHandler() {
             if (queryError || queryErrorCode) {
                 if (queryErrorCode === 'otp_expired' || queryErrorDesc?.includes('expired')) {
                     setStatus('This link has expired. You may have already verified your account. Please try logging in. If the issue persists, try resetting your password.')
+                } else if (queryErrorDesc?.includes('both auth code and code verifier')) {
+                    setStatus('Verification failed due to a missing browser cookie. This happens if you open the link in a different browser or app (like Gmail) than where you signed up. Please try logging in directly, or copy the link and paste it into your original browser.')
                 } else {
                     setStatus(queryErrorDesc ? queryErrorDesc.replace(/\+/g, ' ') : (queryError || 'An unknown error occurred'))
                 }

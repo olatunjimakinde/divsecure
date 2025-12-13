@@ -9,9 +9,15 @@ import { getURL } from '@/lib/utils'
 export async function login(formData: FormData) {
     const supabase = await createClient()
 
+    const getValue = (key: string) => {
+        const value = formData.get(key)
+        if (value === null || value === '') return undefined
+        return String(value)
+    }
+
     const rawData = {
-        email: formData.get('email') as string || undefined,
-        password: formData.get('password') as string || undefined,
+        email: getValue('email'),
+        password: getValue('password'),
     }
 
     const validation = loginSchema.safeParse(rawData)
@@ -40,15 +46,21 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
     const supabase = await createClient()
 
+    const getValue = (key: string) => {
+        const value = formData.get(key)
+        if (value === null || value === '') return undefined
+        return String(value)
+    }
+
     const rawData = {
-        email: formData.get('email') as string || undefined,
-        password: formData.get('password') as string || undefined,
-        phone: formData.get('phone') as string || undefined,
-        role: formData.get('role') as string || undefined,
-        communityId: formData.get('communityId') || undefined,
-        unitNumber: formData.get('unitNumber') || undefined,
-        communityName: formData.get('communityName') || undefined,
-        communityAddress: formData.get('communityAddress') || undefined,
+        email: getValue('email'),
+        password: getValue('password'),
+        phone: getValue('phone'),
+        role: getValue('role'),
+        communityId: getValue('communityId'),
+        unitNumber: getValue('unitNumber'),
+        communityName: getValue('communityName'),
+        communityAddress: getValue('communityAddress'),
     }
 
     console.log('DEBUG SIGNUP RAW DATA:', JSON.stringify(rawData, null, 2))
@@ -164,8 +176,14 @@ export async function signInAsDemoUser() {
 export async function updatePassword(formData: FormData) {
     const supabase = await createClient()
 
-    const password = formData.get('password') as string || ''
-    const confirmPassword = formData.get('confirmPassword') as string || ''
+    const getValue = (key: string) => {
+        const value = formData.get(key)
+        if (value === null || value === '') return undefined
+        return String(value)
+    }
+
+    const password = getValue('password') || ''
+    const confirmPassword = getValue('confirmPassword') || ''
 
     if (password !== confirmPassword) {
         redirect('/update-password?error=Passwords do not match')

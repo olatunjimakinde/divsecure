@@ -20,11 +20,11 @@ function VerifyEmailForm() {
                 <CardDescription>
                     {email ? (
                         <>
-                            Please enter the 6-digit code sent to <strong>{email}</strong>
+                            Please enter the 8-digit code sent to <strong>{email}</strong>
                         </>
                     ) : (
                         <>
-                            Please enter your email address and the 6-digit verification code from your email
+                            Please enter your email address and the 8-digit verification code from your email
                         </>
                     )}
                 </CardDescription>
@@ -50,10 +50,10 @@ function VerifyEmailForm() {
                             id="code"
                             name="code"
                             type="text"
-                            placeholder="123456"
+                            placeholder="12345678"
                             required
-                            pattern="[0-9]{6}"
-                            maxLength={6}
+                            pattern="[0-9]{8}"
+                            maxLength={8}
                             className="text-center text-lg tracking-widest"
                         />
                     </div>

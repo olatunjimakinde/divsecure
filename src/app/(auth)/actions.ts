@@ -75,11 +75,12 @@ export async function signup(formData: FormData) {
     const { email, password, phone, role, communityId, unitNumber } = validation.data
 
     // 1. Create Auth User
+    const verifyEmailUrl = `/verify-email?email=${encodeURIComponent(email)}`
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            emailRedirectTo: `${getURL()}auth/callback?next=/verify-email?email=${encodeURIComponent(email)}`,
+            emailRedirectTo: `${getURL()}auth/callback?next=${encodeURIComponent(verifyEmailUrl)}`,
             data: {
                 full_name: email.split('@')[0], // Default name from email
                 phone: phone,

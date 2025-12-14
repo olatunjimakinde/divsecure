@@ -18,7 +18,15 @@ function VerifyEmailForm() {
             <CardHeader>
                 <CardTitle>Verify your email</CardTitle>
                 <CardDescription>
-                    Please enter the 6-digit code sent to <strong>{email}</strong>
+                    {email ? (
+                        <>
+                            Please enter the 6-digit code sent to <strong>{email}</strong>
+                        </>
+                    ) : (
+                        <>
+                            Please enter your email address and the 6-digit verification code from your email
+                        </>
+                    )}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -30,8 +38,10 @@ function VerifyEmailForm() {
                             name="email"
                             type="email"
                             defaultValue={email}
-                            readOnly
-                            className="bg-muted text-muted-foreground"
+                            placeholder="Enter your email address"
+                            required
+                            className={email ? "bg-muted text-muted-foreground" : ""}
+                            readOnly={!!email}
                         />
                     </div>
                     <div className="space-y-2">

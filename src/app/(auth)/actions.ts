@@ -79,6 +79,7 @@ export async function signup(formData: FormData) {
         email,
         password,
         options: {
+            emailRedirectTo: `${getURL()}auth/callback?next=/verify-email?email=${encodeURIComponent(email)}`,
             data: {
                 full_name: email.split('@')[0], // Default name from email
                 phone: phone,
@@ -129,7 +130,7 @@ export async function signup(formData: FormData) {
     }
 
     revalidatePath('/', 'layout')
-    redirect(`/verify-email?email=${encodeURIComponent(email)}`)
+    redirect(`/login?success=${encodeURIComponent('Account created! Please check your email and click the verification link to activate your account.')}`)
 }
 
 export async function verifyEmailOtp(formData: FormData) {

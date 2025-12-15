@@ -159,6 +159,31 @@ export async function verifyEmailOtp(formData: FormData) {
     redirect('/dashboard')
 }
 
+export async function verifyInvite(formData: FormData) {
+    const supabase = await createClient()
+
+    const token_hash = formData.get('token_hash') as string
+    const type = formData.get('type') as any
+    const next = formData.get('next') as string || '/dashboard'
+
+    if (!token_hash || !type) {
+        redirect('/auth/auth-code-error?error=Missing token or type')
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+        token_hash,
+        type,
+    })
+
+    if (error) {
+        console.error('Error verifying invite:', error)
+        redirect(`/auth/auth-code-error?error=${encodeURIComponent(error.message)}`)
+    }
+
+    revalidatePath('/', 'layout')
+    redirect(next)
+}
+
 export async function signout() {
     const supabase = await createClient()
     await supabase.auth.signOut()

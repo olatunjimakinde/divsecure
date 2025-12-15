@@ -1,6 +1,8 @@
 'use client'
 
+
 import { Button } from '@/components/ui/button'
+import { verifyInvite } from '@/app/(auth)/actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShieldCheck } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
@@ -8,9 +10,41 @@ import { Suspense } from 'react'
 
 function ConfirmPageContent() {
     const searchParams = useSearchParams()
+    const token_hash = searchParams.get('token_hash')
+    const type = searchParams.get('type')
     const code = searchParams.get('code')
     const next = searchParams.get('next') || '/'
 
+    // 1. Handle Token Hash (Invite / Recovery / Magic Link)
+    if (token_hash && type) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
+                <Card className="w-full max-w-md">
+                    <CardHeader className="text-center">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                            <ShieldCheck className="h-6 w-6 text-primary" />
+                        </div>
+                        <CardTitle>Accept Invitation</CardTitle>
+                        <CardDescription>
+                            Please click the button below to accept your invitation and set up your account.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form action={verifyInvite}>
+                            <input type="hidden" name="token_hash" value={token_hash} />
+                            <input type="hidden" name="type" value={type} />
+                            <input type="hidden" name="next" value={next} />
+                            <Button className="w-full" size="lg" type="submit">
+                                Accept & Continue
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
+    // 2. Handle Code (PKCE exchange via callback)
     // Construct the callback URL
     // We need to pass the code and next param to the callback route
     const callbackUrl = `/auth/callback?code=${code}&next=${encodeURIComponent(next)}`

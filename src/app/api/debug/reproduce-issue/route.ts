@@ -28,16 +28,32 @@ export async function GET(request: Request) {
         const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
             type: 'invite',
             email,
-            password: 'temp-password-For-Setup-123', // Optional: set a temp password? No, invite sets it later.
         })
 
         if (linkError) {
             return NextResponse.json({ step: 'generate_link', error: linkError }, { status: 500 })
         }
 
-        const { properties: { token_hash } } = linkData
+        const { properties } = linkData
+        const token_hash = (properties as any).token_hash || (properties as any).hashed_token
 
         console.log('Generated Invite Link properties:', linkData.properties)
+
+        if (!token_hash) {
+            // Fallback: extract from action_link if possible
+            const action_link = (properties as any).action_link
+            if (action_link) {
+                const url = new URL(action_link)
+                // token_hash might be in search params
+                const extracted = url.searchParams.get('token_hash') || url.searchParams.get('token')
+                if (extracted) {
+                    // If it's 'token', it might not be hashed yet? No, from generateLink it should be ready to use? 
+                    // Actually generateLink with type invite usually returns a link with token_hash.
+                    // Let's just log and fail if missing.
+                }
+            }
+            if (!token_hash) return NextResponse.json({ step: 'generate_link', error: 'Could not find token_hash in properties', properties }, { status: 500 })
+        }
 
         // 3. Simulate VerifyInvite (Server Side)
         // We use the standard client (not admin) to verify

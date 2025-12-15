@@ -5,15 +5,45 @@ import { Button } from '@/components/ui/button'
 import { verifyInvite } from '@/app/(auth)/actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShieldCheck } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 function ConfirmPageContent() {
     const searchParams = useSearchParams()
+    const router = useRouter()
+    const supabase = createClient()
+
     const token_hash = searchParams.get('token_hash')
     const type = searchParams.get('type')
     const code = searchParams.get('code')
     const next = searchParams.get('next') || '/'
+
+    // Handle Implicit Flow (Hash Fragment)
+    useEffect(() => {
+        const handleHash = async () => {
+            const hash = window.location.hash
+            if (hash && hash.includes('access_token')) {
+                const params = new URLSearchParams(hash.substring(1)) // remove #
+                const access_token = params.get('access_token')
+                const refresh_token = params.get('refresh_token')
+
+                if (access_token && refresh_token) {
+                    const { error } = await supabase.auth.setSession({
+                        access_token,
+                        refresh_token
+                    })
+
+                    if (!error) {
+                        router.push(next)
+                    }
+                }
+            }
+        }
+
+        handleHash()
+    }, [next, router, supabase.auth])
+
 
     console.log('Confirm Page Params:', {
         token_hash: token_hash ? 'present' : 'missing',

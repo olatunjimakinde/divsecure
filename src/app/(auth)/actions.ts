@@ -246,7 +246,7 @@ export async function updatePassword(formData: FormData) {
 
     if (error) {
         console.error('Error updating password:', error)
-        redirect('/update-password?error=Could not update password')
+        redirect(`/update-password?error=${encodeURIComponent(error.message)}`)
     }
 
     revalidatePath('/', 'layout')

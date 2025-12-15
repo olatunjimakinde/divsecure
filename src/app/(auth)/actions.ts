@@ -170,15 +170,17 @@ export async function verifyInvite(formData: FormData) {
         redirect('/auth/auth-code-error?error=Missing token or type')
     }
 
-    const { error } = await supabase.auth.verifyOtp({
+    const { error: verifyError, data: verifyData } = await supabase.auth.verifyOtp({
         token_hash,
         type,
     })
 
-    if (error) {
-        console.error('Error verifying invite:', error)
-        redirect(`/auth/auth-code-error?error=${encodeURIComponent(error.message)}`)
+    if (verifyError) {
+        console.error('Error verifying invite:', verifyError)
+        redirect(`/auth/auth-code-error?error=${encodeURIComponent(verifyError.message)}`)
     }
+
+    console.log('Invite verified successfully:', verifyData.user?.id)
 
     revalidatePath('/', 'layout')
     redirect(next)
@@ -240,7 +242,14 @@ export async function updatePassword(formData: FormData) {
         redirect('/update-password?error=Passwords do not match')
     }
 
-    const { error } = await supabase.auth.updateUser({
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    console.log('UpdatePassword - Current User:', user?.id, 'Error:', userError)
+
+    if (!user) {
+        redirect('/login?error=Session expired. Please log in again.')
+    }
+
+    const { error, data } = await supabase.auth.updateUser({
         password: password,
     })
 
@@ -248,6 +257,8 @@ export async function updatePassword(formData: FormData) {
         console.error('Error updating password:', error)
         redirect(`/update-password?error=${encodeURIComponent(error.message)}`)
     }
+
+    console.log('Password updated successfully for user:', data.user?.id)
 
     revalidatePath('/', 'layout')
     redirect('/dashboard')

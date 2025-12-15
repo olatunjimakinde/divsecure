@@ -60,7 +60,7 @@ export async function createHousehold(formData: FormData) {
                 userId = profiles.id
             } else {
                 // Invite User
-                const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
+                const redirectTo = `${getURL()}auth/callback?next=${encodeURIComponent('/update-password')}`
                 console.log('Inviting user with redirectTo:', redirectTo)
 
                 const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(contactEmail, {
@@ -502,7 +502,7 @@ export async function inviteMemberToHouseholdCore(supabaseAdmin: any, communityI
         userId = profile.id
     } else {
         // Invite User
-        const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
+        const redirectTo = `${getURL()}auth/callback?next=${encodeURIComponent('/update-password')}`
         console.log('Inviting user with redirectTo:', redirectTo)
 
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {

@@ -15,6 +15,13 @@ function ConfirmPageContent() {
     const code = searchParams.get('code')
     const next = searchParams.get('next') || '/'
 
+    console.log('Confirm Page Params:', {
+        token_hash: token_hash ? 'present' : 'missing',
+        type,
+        code: code ? 'present' : 'missing',
+        all: Object.fromEntries(searchParams.entries())
+    })
+
     // 1. Handle Token Hash (Invite / Recovery / Magic Link)
     if (token_hash && type) {
         return (

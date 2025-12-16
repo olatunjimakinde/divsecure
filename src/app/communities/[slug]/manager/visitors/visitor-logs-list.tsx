@@ -142,22 +142,22 @@ export async function VisitorLogsList({
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             <div className="flex flex-col">
                                 <span className="text-muted-foreground text-xs">Host</span>
-                                <span>{log.visitor_codes.host?.full_name || 'Unknown'}</span>
+                                <span className="truncate">{log.visitor_codes.host?.full_name || 'Unknown'}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-muted-foreground text-xs">Vehicle</span>
-                                <span>{log.visitor_codes.vehicle_plate || '-'}</span>
+                                <span className="truncate">{log.visitor_codes.vehicle_plate || '-'}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-muted-foreground text-xs">Entry Point</span>
-                                <span>{log.entry_point || 'Main Gate'}</span>
+                                <span className="truncate">{log.entry_point || 'Main Gate'}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-muted-foreground text-xs">Verified By</span>
-                                <span>{log.guard?.full_name || 'System'}</span>
+                                <span className="truncate">{log.guard?.full_name || 'System'}</span>
                             </div>
                         </div>
                     </div>

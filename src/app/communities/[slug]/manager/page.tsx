@@ -152,43 +152,43 @@ export default async function ManagerDashboardPage({
                     </TabsList>
                 </div>
 
-                <TabsContent value="residents" className="space-y-4 animate-in zoom-in-95 duration-500">
+                <TabsContent value="residents" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>Residents</CardTitle>
                             <CardDescription>
                                 Manage resident access and approvals.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <ResidentsList communityId={community.id} communitySlug={slug} searchQuery={query} />
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="guards" className="space-y-4 animate-in zoom-in-95 duration-500">
+                <TabsContent value="guards" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>Security Guards</CardTitle>
                             <CardDescription>
                                 Manage security personnel access.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <GuardsList communityId={community.id} searchQuery={query} />
                         </CardContent>
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="households" className="space-y-4 animate-in zoom-in-95 duration-500">
+                <TabsContent value="households" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>Households</CardTitle>
                             <CardDescription>
                                 Manage physical units and resident assignments.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <HouseholdList
                                 households={filteredHouseholds}
                                 unassignedMembers={formattedUnassigned}
@@ -199,15 +199,15 @@ export default async function ManagerDashboardPage({
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="visitors" className="space-y-4 animate-in zoom-in-95 duration-500">
+                <TabsContent value="visitors" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>Visitor Logs</CardTitle>
                             <CardDescription>
                                 View history of visitor entries.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <VisitorLogsList communityId={community.id} searchQuery={query} />
                         </CardContent>
                     </Card>

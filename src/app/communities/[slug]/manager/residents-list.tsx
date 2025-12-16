@@ -115,13 +115,13 @@ export async function ResidentsList({ communityId, communitySlug, searchQuery }:
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div className="flex flex-col">
+                            <div className="flex flex-col min-w-0">
                                 <span className="text-muted-foreground text-xs">Unit</span>
-                                <span>{resident.households?.name || resident.unit_number || '-'}</span>
+                                <span className="truncate">{resident.households?.name || resident.unit_number || '-'}</span>
                             </div>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col min-w-0">
                                 <span className="text-muted-foreground text-xs">Joined</span>
-                                <span>{new Date(resident.created_at).toLocaleDateString()}</span>
+                                <span className="truncate">{new Date(resident.created_at).toLocaleDateString()}</span>
                             </div>
                         </div>
 

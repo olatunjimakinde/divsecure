@@ -143,12 +143,12 @@ export default async function ManagerDashboardPage({
             </div>
 
             <Tabs defaultValue="residents" className="space-y-4">
-                <div className="w-full overflow-x-auto pb-2">
-                    <TabsList className="w-full justify-start">
-                        <TabsTrigger value="residents">Residents</TabsTrigger>
-                        <TabsTrigger value="guards">Security Guards</TabsTrigger>
-                        <TabsTrigger value="households">Households</TabsTrigger>
-                        <TabsTrigger value="visitors">Visitor Logs</TabsTrigger>
+                <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <TabsList className="inline-flex h-auto w-auto min-w-full justify-start p-1">
+                        <TabsTrigger value="residents" className="flex-1 sm:flex-none">Residents</TabsTrigger>
+                        <TabsTrigger value="guards" className="flex-1 sm:flex-none">Security Guards</TabsTrigger>
+                        <TabsTrigger value="households" className="flex-1 sm:flex-none">Households</TabsTrigger>
+                        <TabsTrigger value="visitors" className="flex-1 sm:flex-none">Visitor Logs</TabsTrigger>
                     </TabsList>
                 </div>
 

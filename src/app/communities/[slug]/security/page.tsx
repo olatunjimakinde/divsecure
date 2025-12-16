@@ -140,26 +140,28 @@ export default async function GuardSecurityPage({
             </div>
 
             <Tabs defaultValue="station" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4">
-                    <TabsTrigger value="station">
-                        <ShieldCheck className="mr-2 h-4 w-4" />
-                        Station
-                    </TabsTrigger>
-                    <TabsTrigger value="messages">
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        Messages
-                    </TabsTrigger>
-                    <TabsTrigger value="schedule">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Schedule
-                    </TabsTrigger>
-                    {member.role === 'head_of_security' && (
-                        <TabsTrigger value="team">
+                <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <TabsList className="inline-flex h-auto w-auto min-w-full justify-start p-1">
+                        <TabsTrigger value="station" className="flex-1 sm:flex-none">
                             <ShieldCheck className="mr-2 h-4 w-4" />
-                            Team
+                            Station
                         </TabsTrigger>
-                    )}
-                </TabsList>
+                        <TabsTrigger value="messages" className="flex-1 sm:flex-none">
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            Messages
+                        </TabsTrigger>
+                        <TabsTrigger value="schedule" className="flex-1 sm:flex-none">
+                            <Calendar className="mr-2 h-4 w-4" />
+                            Schedule
+                        </TabsTrigger>
+                        {member.role === 'head_of_security' && (
+                            <TabsTrigger value="team" className="flex-1 sm:flex-none">
+                                <ShieldCheck className="mr-2 h-4 w-4" />
+                                Team
+                            </TabsTrigger>
+                        )}
+                    </TabsList>
+                </div>
 
                 {/* STATION TAB */}
                 <TabsContent value="station" className="space-y-4">

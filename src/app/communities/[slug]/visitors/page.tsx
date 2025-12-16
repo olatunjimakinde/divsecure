@@ -109,10 +109,12 @@ export default async function VisitorsPage({
             </div>
 
             <Tabs defaultValue="active" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="active">Active Codes</TabsTrigger>
-                    <TabsTrigger value="history">Entry History</TabsTrigger>
-                </TabsList>
+                <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <TabsList className="inline-flex h-auto w-auto min-w-full justify-start p-1">
+                        <TabsTrigger value="active" className="flex-1 sm:flex-none">Active Codes</TabsTrigger>
+                        <TabsTrigger value="history" className="flex-1 sm:flex-none">Entry History</TabsTrigger>
+                    </TabsList>
+                </div>
 
                 <TabsContent value="active" className="space-y-4">
                     {codes?.length === 0 ? (

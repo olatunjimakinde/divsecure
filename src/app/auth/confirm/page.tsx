@@ -14,6 +14,7 @@ function ConfirmPageContent() {
     const router = useRouter()
     const supabase = createClient()
     const [isValidating, setIsValidating] = useState(true)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
     const token_hash = searchParams.get('token_hash')
     const type = searchParams.get('type')
@@ -38,12 +39,12 @@ function ConfirmPageContent() {
                     if (!error) {
                         router.push(next)
                         return
+                    } else {
+                        console.error('SetSession Error:', error)
+                        setErrorMsg(error.message)
                     }
                 }
             }
-            // If no hash or invalid hash, we stop validating for implicit flow
-            // But we only set isValidating to false if we also don't have other params to check
-            // Actually, we should set it to false after this check is done to allow other checks to proceed or fail
             setIsValidating(false)
         }
 
@@ -110,6 +111,21 @@ function ConfirmPageContent() {
                         This invitation link appears to be invalid or missing the verification code.
                     </CardDescription>
                 </CardHeader>
+                <CardContent className="text-xs text-muted-foreground bg-muted p-4 rounded overflow-auto text-left">
+                    <p className="font-semibold mb-2">Debug Info:</p>
+                    {errorMsg && (
+                        <div className="mb-2 p-2 bg-destructive/10 text-destructive rounded border border-destructive/20">
+                            <strong>Error:</strong> {errorMsg}
+                        </div>
+                    )}
+                    <pre>
+                        {JSON.stringify({
+                            hash: typeof window !== 'undefined' ? !!window.location.hash : 'N/A',
+                            params: Object.fromEntries(searchParams.entries()),
+                            url: typeof window !== 'undefined' ? window.location.href : 'N/A'
+                        }, null, 2)}
+                    </pre>
+                </CardContent>
             </Card>
         </div>
     )

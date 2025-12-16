@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
 // --- Guard Management ---
 
@@ -15,6 +16,13 @@ export async function createGuard(formData: FormData) {
     const communityId = formData.get('communityId') as string
     const communitySlug = formData.get('communitySlug') as string
     const isHead = formData.get('isHead') === 'on'
+
+    // Validate email
+    const emailSchema = z.string().email()
+    const emailValidation = emailSchema.safeParse(email)
+    if (!emailValidation.success) {
+        return { error: 'Invalid email format' }
+    }
 
     // 1. Check permissions (Manager or Head of Security)
     const { data: { user } } = await supabase.auth.getUser()

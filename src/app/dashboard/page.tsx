@@ -68,7 +68,7 @@ export default async function DashboardPage() {
                             </div>
                         ) : (
                             <Button asChild variant="default" className="w-full sm:w-auto rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
-                                <Link href="/subscribe">Subscribe to Create</Link>
+                                <Link href="/subscribe?intent=new_community">Subscribe to Create</Link>
                             </Button>
                         )}
                     </div>

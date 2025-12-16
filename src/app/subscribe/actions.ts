@@ -12,7 +12,7 @@ export async function subscribeToPlan(formData: FormData) {
     const communityId = formData.get('communityId') as string | null
     const intent = formData.get('intent') as string | null
 
-    console.log('Subscribe Action Debug:', { planId, communityId, intent })
+    console.log('Subscribe Action Debug - Intent:', intent, 'PlanId:', planId, 'CommunityId:', communityId)
 
     const {
         data: { user },

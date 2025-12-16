@@ -116,15 +116,15 @@ export default async function VisitorsPage({
                     </TabsList>
                 </div>
 
-                <TabsContent value="active" className="space-y-4">
+                <TabsContent value="active" className="space-y-4 w-full max-w-full">
                     {codes?.length === 0 ? (
-                        <Card className="text-center py-16 border-dashed border-2 bg-muted/10 hover:bg-muted/20 transition-colors animate-in zoom-in-95 duration-500">
+                        <Card className="text-center py-8 sm:py-16 border-dashed border-2 bg-muted/10 hover:bg-muted/20 transition-colors animate-in zoom-in-95 duration-500">
                             <CardHeader>
                                 <div className="mx-auto bg-primary/10 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 ring-1 ring-primary/20">
                                     <Car className="h-8 w-8 text-primary" />
                                 </div>
                                 <CardTitle className="text-xl">No active codes</CardTitle>
-                                <CardDescription className="max-w-sm mx-auto mt-2">
+                                <CardDescription className="max-w-sm mx-auto mt-2 px-4 sm:px-0">
                                     You haven&apos;t generated any visitor codes yet. Create one to allow guest entry.
                                 </CardDescription>
                             </CardHeader>
@@ -141,15 +141,15 @@ export default async function VisitorsPage({
                     )}
                 </TabsContent>
 
-                <TabsContent value="history" className="space-y-4">
+                <TabsContent value="history" className="space-y-4 w-full max-w-full">
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>Entry History</CardTitle>
                             <CardDescription>
                                 View when your visitors arrived.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <VisitorHistoryList communityId={community.id} />
                         </CardContent>
                     </Card>

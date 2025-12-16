@@ -164,12 +164,12 @@ export default async function GuardSecurityPage({
                 </div>
 
                 {/* STATION TAB */}
-                <TabsContent value="station" className="space-y-4">
+                <TabsContent value="station" className="space-y-4 w-full max-w-full">
 
                     {/* Shift Status Section */}
                     {activeShift ? (
                         <Card className="border-green-500/50 bg-green-500/10">
-                            <CardHeader className="pb-2">
+                            <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-2">
                                 <div className="flex items-center gap-2">
                                     <CheckCircle className="h-5 w-5 text-green-600" />
                                     <CardTitle className="text-green-700">You are On Duty</CardTitle>
@@ -178,7 +178,7 @@ export default async function GuardSecurityPage({
                                     Shift started at {new Date(activeShift.clock_in_time!).toLocaleTimeString()}
                                 </CardDescription>
                             </CardHeader>
-                            <CardFooter>
+                            <CardFooter className="p-4 sm:p-6 sm:pt-0 pt-0">
                                 <form action={async (formData) => {
                                     'use server'
                                     await clockOut(formData)
@@ -232,20 +232,20 @@ export default async function GuardSecurityPage({
 
                     {/* Verification Section - Always Visible */}
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>Access Code Verification</CardTitle>
                             <CardDescription>
                                 Verify visitor access codes.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <SecurityForm slug={slug} />
                         </CardContent>
                     </Card>
                 </TabsContent>
 
                 {/* MESSAGES TAB */}
-                <TabsContent value="messages" className="space-y-4">
+                <TabsContent value="messages" className="space-y-4 w-full max-w-full">
                     <MessageCenter
                         communityId={community.id}
                         communitySlug={slug}
@@ -257,19 +257,19 @@ export default async function GuardSecurityPage({
                 </TabsContent>
 
                 {/* SCHEDULE TAB */}
-                <TabsContent value="schedule" className="space-y-4">
+                <TabsContent value="schedule" className="space-y-4 w-full max-w-full">
                     {/* Upcoming Shifts */}
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>My Shifts</CardTitle>
                             <CardDescription>
                                 Your upcoming schedule.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <div className="space-y-4">
                                 {shifts?.filter(s => s.status === 'scheduled').map((shift) => (
-                                    <div key={shift.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                    <div key={shift.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4 sm:gap-0">
                                         <div>
                                             <div className="font-medium">
                                                 {new Date(shift.start_time).toLocaleDateString()}
@@ -285,7 +285,7 @@ export default async function GuardSecurityPage({
                                             }}>
                                                 <input type="hidden" name="shiftId" value={shift.id} />
                                                 <input type="hidden" name="communitySlug" value={slug} />
-                                                <Button size="sm">
+                                                <Button size="sm" className="w-full sm:w-auto">
                                                     <Clock className="mr-2 h-4 w-4" />
                                                     Clock In
                                                 </Button>
@@ -304,18 +304,21 @@ export default async function GuardSecurityPage({
 
                     {/* Shift History */}
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                             <CardTitle>History</CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <div className="space-y-2">
                                 {shifts?.filter(s => s.status === 'completed').map((shift) => (
-                                    <div key={shift.id} className="flex justify-between text-sm p-2 hover:bg-muted rounded">
-                                        <span>{new Date(shift.start_time).toLocaleDateString()}</span>
+                                    <div key={shift.id} className="flex flex-col sm:flex-row sm:justify-between text-sm p-2 hover:bg-muted rounded gap-1 sm:gap-0">
+                                        <div className="flex justify-between sm:block">
+                                            <span>{new Date(shift.start_time).toLocaleDateString()}</span>
+                                            <Badge variant="secondary" className="sm:hidden">Completed</Badge>
+                                        </div>
                                         <span className="text-muted-foreground">
                                             {new Date(shift.clock_in_time!).toLocaleTimeString()} - {new Date(shift.clock_out_time!).toLocaleTimeString()}
                                         </span>
-                                        <Badge variant="secondary">Completed</Badge>
+                                        <Badge variant="secondary" className="hidden sm:inline-flex">Completed</Badge>
                                     </div>
                                 ))}
                             </div>
@@ -325,7 +328,7 @@ export default async function GuardSecurityPage({
 
                 {/* TEAM TAB */}
                 {member.role === 'head_of_security' && (
-                    <TabsContent value="team" className="space-y-4">
+                    <TabsContent value="team" className="space-y-4 w-full max-w-full">
                         <GuardList
                             communityId={community.id}
                             communitySlug={slug}

@@ -37,6 +37,7 @@ function VerifyEmailForm() {
                             id="email"
                             name="email"
                             type="email"
+                            key={email || 'no-email'}
                             defaultValue={email}
                             placeholder="Enter your email address"
                             required

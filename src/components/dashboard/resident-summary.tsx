@@ -30,53 +30,59 @@ export async function ResidentSummary({ communityId, communitySlug, userId }: Re
         .gt('valid_until', new Date().toISOString())
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <Link href={`/communities/${communitySlug}/messages`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <Card className="hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer h-full border-l-4 border-l-blue-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
                             Messages
                         </CardTitle>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <div className="p-2 bg-blue-500/10 rounded-full">
+                            <MessageSquare className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{unreadMessages || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Unread notifications
+                        <div className="text-3xl font-bold tracking-tight">{unreadMessages || 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            In your inbox
                         </p>
                     </CardContent>
                 </Card>
             </Link>
 
             <Link href={`/communities/${communitySlug}/visitors`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <Card className="hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer h-full border-l-4 border-l-green-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
                             Active Codes
                         </CardTitle>
-                        <UserPlus className="h-4 w-4 text-muted-foreground" />
+                        <div className="p-2 bg-green-500/10 rounded-full">
+                            <UserPlus className="h-4 w-4 text-green-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{activeCodes || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Valid visitor codes
+                        <div className="text-3xl font-bold tracking-tight">{activeCodes || 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Visitors currently allowed
                         </p>
                     </CardContent>
                 </Card>
             </Link>
 
             <Link href={`/communities/${communitySlug}/visitors`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <Card className="group hover:bg-primary/5 transition-all hover:shadow-md cursor-pointer h-full border-dashed border-2 hover:border-primary/50">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-muted-foreground group-hover:text-primary transition-colors">
                             Quick Invite
                         </CardTitle>
-                        <History className="h-4 w-4 text-muted-foreground" />
+                        <div className="p-2 bg-primary/5 group-hover:bg-primary/10 rounded-full transition-colors">
+                            <History className="h-4 w-4 text-primary" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-sm font-medium text-primary">Create New Code &rarr;</div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Invite a guest
+                        <div className="text-lg font-semibold text-primary/80 group-hover:text-primary transition-colors">Create New Code &rarr;</div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                            Invite a guest instantly
                         </p>
                     </CardContent>
                 </Card>

@@ -53,40 +53,44 @@ function ConfirmPageContent() {
     })
 
     // 1. Handle Token Hash (Invite / Recovery / Magic Link)
-    if (token_hash && type) {
+    useEffect(() => {
+        if (token_hash && type) {
+            const form = document.getElementById('verify-invite-form') as HTMLFormElement
+            if (form) form.requestSubmit()
+        }
+    }, [token_hash, type])
+
+    // 2. Handle Code (PKCE exchange via callback)
+    useEffect(() => {
+        if (code) {
+            const callbackUrl = `/auth/callback?code=${code}&next=${encodeURIComponent(next)}`
+            router.replace(callbackUrl)
+        }
+    }, [code, next, router])
+
+    if ((token_hash && type) || code) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
-                <Card className="w-full max-w-md">
-                    <CardHeader className="text-center">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                            <ShieldCheck className="h-6 w-6 text-primary" />
-                        </div>
-                        <CardTitle>Accept Invitation</CardTitle>
-                        <CardDescription>
-                            Please click the button below to accept your invitation and set up your account.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form action={verifyInvite}>
-                            <input type="hidden" name="token_hash" value={token_hash} />
-                            <input type="hidden" name="type" value={type} />
-                            <input type="hidden" name="next" value={next} />
-                            <Button className="w-full" size="lg" type="submit">
-                                Accept & Continue
-                            </Button>
-                        </form>
+                <Card className="w-full max-w-md border-none shadow-none bg-transparent">
+                    <CardContent className="flex flex-col items-center justify-center pt-6">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                        <p className="mt-4 text-sm text-muted-foreground">Verifying invitation...</p>
+
+                        {/* Hidden form for token_hash verification */}
+                        {token_hash && type && (
+                            <form id="verify-invite-form" action={verifyInvite} className="hidden">
+                                <input type="hidden" name="token_hash" value={token_hash} />
+                                <input type="hidden" name="type" value={type} />
+                                <input type="hidden" name="next" value={next} />
+                            </form>
+                        )}
                     </CardContent>
                 </Card>
             </div>
         )
     }
 
-    // 2. Handle Code (PKCE exchange via callback)
-    // Construct the callback URL
-    // We need to pass the code and next param to the callback route
-    const callbackUrl = `/auth/callback?code=${code}&next=${encodeURIComponent(next)}`
-
-    if (!code) {
+    if (!code && (!token_hash || !type)) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
                 <Card className="w-full max-w-md">
@@ -104,26 +108,7 @@ function ConfirmPageContent() {
         )
     }
 
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                        <ShieldCheck className="h-6 w-6 text-primary" />
-                    </div>
-                    <CardTitle>Security Check</CardTitle>
-                    <CardDescription>
-                        To protect your account, please click the button below to verify your invitation.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button asChild className="w-full" size="lg">
-                        <a href={callbackUrl}>Verify & Continue</a>
-                    </Button>
-                </CardContent>
-            </Card>
-        </div>
-    )
+    return null
 }
 
 export default function ConfirmPage() {

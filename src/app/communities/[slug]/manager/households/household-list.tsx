@@ -415,11 +415,19 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                         </DialogDescription>
                     </DialogHeader>
                     <form action={async (formData) => {
-                        const result = await createHousehold(formData)
-                        if (result?.error) {
-                            alert(result.error)
-                        } else {
-                            setIsCreateOpen(false)
+                        const submitButton = document.getElementById('create-household-submit') as HTMLButtonElement
+                        if (submitButton) submitButton.disabled = true
+
+                        try {
+                            const result = await createHousehold(formData)
+                            if (result?.error) {
+                                alert(result.error)
+                            } else {
+                                alert('Invite sent to household successfully.')
+                                setIsCreateOpen(false)
+                            }
+                        } finally {
+                            if (submitButton) submitButton.disabled = false
                         }
                     }}>
                         <input type="hidden" name="communityId" value={communityId} />
@@ -449,7 +457,9 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button type="submit">Create Household</Button>
+                            <Button type="submit" id="create-household-submit">
+                                Create Household
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

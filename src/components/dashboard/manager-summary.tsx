@@ -42,35 +42,39 @@ export async function ManagerSummary({ communityId, communitySlug }: ManagerSumm
         .eq('status', 'pending')
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Link href={`/communities/${communitySlug}/security`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <Card className="hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer h-full border-l-4 border-l-blue-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
                             Unread Messages
                         </CardTitle>
-                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <div className="p-2 bg-blue-500/10 rounded-full">
+                            <MessageSquare className="h-4 w-4 text-blue-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{unreadMessages || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            For Community Manager
+                        <div className="text-3xl font-bold tracking-tight">{unreadMessages || 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Action required
                         </p>
                     </CardContent>
                 </Card>
             </Link>
 
             <Link href={`/communities/${communitySlug}/security`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <Card className="hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer h-full border-l-4 border-l-green-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
                             Active Guards
                         </CardTitle>
-                        <ShieldCheck className="h-4 w-4 text-muted-foreground" />
+                        <div className="p-2 bg-green-500/10 rounded-full">
+                            <ShieldCheck className="h-4 w-4 text-green-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{activeGuards || 0}</div>
-                        <p className="text-xs text-muted-foreground">
+                        <div className="text-3xl font-bold tracking-tight">{activeGuards || 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
                             Currently on duty
                         </p>
                     </CardContent>
@@ -78,34 +82,38 @@ export async function ManagerSummary({ communityId, communitySlug }: ManagerSumm
             </Link>
 
             <Link href={`/communities/${communitySlug}/residents`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <Card className="hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer h-full border-l-4 border-l-purple-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
                             Total Residents
                         </CardTitle>
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <div className="p-2 bg-purple-500/10 rounded-full">
+                            <Users className="h-4 w-4 text-purple-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{totalResidents || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Approved residents
+                        <div className="text-3xl font-bold tracking-tight">{totalResidents || 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Registered members
                         </p>
                     </CardContent>
                 </Card>
             </Link>
 
             <Link href={`/communities/${communitySlug}/residents?status=pending`}>
-                <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <Card className="hover:bg-muted/50 transition-all hover:shadow-md cursor-pointer h-full border-l-4 border-l-orange-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
                             Pending Approvals
                         </CardTitle>
-                        <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        <div className="p-2 bg-orange-500/10 rounded-full">
+                            <UserCheck className="h-4 w-4 text-orange-600" />
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{pendingApprovals || 0}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Awaiting review
+                        <div className="text-3xl font-bold tracking-tight">{pendingApprovals || 0}</div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Awaiting verification
                         </p>
                     </CardContent>
                 </Card>

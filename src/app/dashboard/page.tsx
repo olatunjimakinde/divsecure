@@ -60,7 +60,7 @@ export default async function DashboardPage() {
                         {isAllowed ? (
                             <div className="flex gap-3 animate-in fade-in slide-in-from-right-2 duration-500 w-full sm:w-auto">
                                 <Button asChild variant="outline" className="w-full sm:w-auto rounded-full h-10 shadow-sm hover:shadow-md transition-all border-primary/20 hover:border-primary/50 hover:bg-primary/5">
-                                    <Link href="/communities/create">
+                                    <Link href="https://divsecure.vercel.app/subscribe?intent=new_community">
                                         <Building2 className="mr-2 h-4 w-4 text-primary" />
                                         Add Community
                                     </Link>

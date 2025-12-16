@@ -125,14 +125,14 @@ export async function VisitorLogsList({
             <div className="grid gap-4 md:hidden">
                 {logs.map((log: any) => (
                     <div key={log.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
-                        <div className="flex items-start justify-between">
-                            <div className="space-y-1">
-                                <div className="font-semibold">{log.visitor_codes.visitor_name}</div>
-                                <div className="text-xs text-muted-foreground font-mono">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="space-y-1 min-w-0 flex-1">
+                                <div className="font-semibold truncate">{log.visitor_codes.visitor_name}</div>
+                                <div className="text-xs text-muted-foreground font-mono truncate">
                                     {log.visitor_codes.access_code}
                                 </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right shrink-0">
                                 <div className="font-medium text-sm">
                                     {new Date(log.entered_at).toLocaleDateString()}
                                 </div>

@@ -334,12 +334,12 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                 ) : (
                     households.map((household) => (
                         <div key={household.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
-                            <div className="flex items-start justify-between">
-                                <div className="space-y-1">
-                                    <div className="font-semibold">{household.name}</div>
-                                    <div className="text-sm text-muted-foreground">{household.contact_email || '-'}</div>
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="space-y-1 min-w-0 flex-1">
+                                    <div className="font-semibold truncate">{household.name}</div>
+                                    <div className="text-sm text-muted-foreground truncate">{household.contact_email || '-'}</div>
                                 </div>
-                                <Badge variant={household.status === 'active' ? 'default' : 'destructive'}>
+                                <Badge variant={household.status === 'active' ? 'default' : 'destructive'} className="shrink-0">
                                     {household.status}
                                 </Badge>
                             </div>

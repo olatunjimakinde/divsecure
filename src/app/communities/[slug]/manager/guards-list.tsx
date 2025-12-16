@@ -63,10 +63,10 @@ export async function GuardsList({ communityId, searchQuery }: { communityId: st
             <div className="grid gap-4 md:hidden">
                 {guards.map((guard) => (
                     <div key={guard.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
-                        <div className="flex items-start justify-between">
-                            <div className="space-y-1">
-                                <div className="font-semibold">{guard.profiles?.full_name || 'Unknown'}</div>
-                                <div className="text-sm text-muted-foreground">{guard.profiles?.email}</div>
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="space-y-1 min-w-0 flex-1">
+                                <div className="font-semibold truncate">{guard.profiles?.full_name || 'Unknown'}</div>
+                                <div className="text-sm text-muted-foreground truncate">{guard.profiles?.email}</div>
                             </div>
                             <RemoveGuardButton memberId={guard.id} communityId={communityId} />
                         </div>

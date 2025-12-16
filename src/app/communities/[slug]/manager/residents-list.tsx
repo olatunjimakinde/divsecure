@@ -99,17 +99,17 @@ export async function ResidentsList({ communityId, communitySlug, searchQuery }:
             <div className="grid gap-4 md:hidden">
                 {residents.map((resident) => (
                     <div key={resident.id} className="flex flex-col gap-4 rounded-lg border p-4 shadow-sm bg-card">
-                        <div className="flex items-start justify-between">
-                            <div className="space-y-1">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="space-y-1 min-w-0 flex-1">
                                 <div className="font-semibold flex items-center gap-2">
-                                    {resident.profiles?.full_name || 'Unknown'}
+                                    <span className="truncate">{resident.profiles?.full_name || 'Unknown'}</span>
                                     {resident.is_household_head && (
-                                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-5">Head</Badge>
+                                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-5 shrink-0">Head</Badge>
                                     )}
                                 </div>
-                                <div className="text-sm text-muted-foreground">{resident.profiles?.email}</div>
+                                <div className="text-sm text-muted-foreground truncate">{resident.profiles?.email}</div>
                             </div>
-                            <Badge variant={resident.status === 'approved' ? 'default' : 'secondary'}>
+                            <Badge variant={resident.status === 'approved' ? 'default' : 'secondary'} className="shrink-0">
                                 {resident.status}
                             </Badge>
                         </div>

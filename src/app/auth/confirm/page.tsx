@@ -6,13 +6,14 @@ import { verifyInvite } from '@/app/(auth)/actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShieldCheck } from 'lucide-react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 function ConfirmPageContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const supabase = createClient()
+    const [isValidating, setIsValidating] = useState(true)
 
     const token_hash = searchParams.get('token_hash')
     const type = searchParams.get('type')
@@ -36,9 +37,14 @@ function ConfirmPageContent() {
 
                     if (!error) {
                         router.push(next)
+                        return
                     }
                 }
             }
+            // If no hash or invalid hash, we stop validating for implicit flow
+            // But we only set isValidating to false if we also don't have other params to check
+            // Actually, we should set it to false after this check is done to allow other checks to proceed or fail
+            setIsValidating(false)
         }
 
         handleHash()
@@ -68,7 +74,9 @@ function ConfirmPageContent() {
         }
     }, [code, next, router])
 
-    if ((token_hash && type) || code) {
+    const hasParams = (token_hash && type) || code
+
+    if (isValidating || hasParams) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
                 <Card className="w-full max-w-md border-none shadow-none bg-transparent">
@@ -90,25 +98,21 @@ function ConfirmPageContent() {
         )
     }
 
-    if (!code && (!token_hash || !type)) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
-                <Card className="w-full max-w-md">
-                    <CardHeader className="text-center">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                            <ShieldCheck className="h-6 w-6 text-destructive" />
-                        </div>
-                        <CardTitle>Invalid Link</CardTitle>
-                        <CardDescription>
-                            This invitation link appears to be invalid or missing the verification code.
-                        </CardDescription>
-                    </CardHeader>
-                </Card>
-            </div>
-        )
-    }
-
-    return null
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-muted/50 p-4">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                        <ShieldCheck className="h-6 w-6 text-destructive" />
+                    </div>
+                    <CardTitle>Invalid Link</CardTitle>
+                    <CardDescription>
+                        This invitation link appears to be invalid or missing the verification code.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        </div>
+    )
 }
 
 export default function ConfirmPage() {

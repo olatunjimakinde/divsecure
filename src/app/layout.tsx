@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description: "Secure community management platform",
   manifest: "/manifest.json",
   icons: {
-    icon: "/logo.png",
+    icon: "/favicon.jpg",
     apple: "/logo.png",
   },
   appleWebApp: {

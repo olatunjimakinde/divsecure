@@ -40,7 +40,12 @@ function VerifyEmailForm() {
                             defaultValue={email}
                             placeholder="Enter your email address"
                             required
-                            className={email ? "bg-muted text-muted-foreground" : ""}
+                            className={email ? "font-medium" : ""}
+                            // We allow editing in case the user wants to verify a different email or fix a typo, 
+                            // though in the OTP flow it must match the one the code was sent to.
+                            // But usually blocking it is safer to ensure they verify the RIGHT email.
+                            // The user request "prefill... so user only needs to enter verification token" implies they shouldn't need to touch email.
+                            // I will keep it readOnly to prevent confusion as the OTP is tied to that specific email.
                             readOnly={!!email}
                         />
                     </div>

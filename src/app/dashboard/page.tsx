@@ -12,6 +12,8 @@ import { Building2, Plus } from 'lucide-react'
 export default async function DashboardPage() {
     const supabase = await createClient()
 
+    // Trigger rebuild
+
     const {
         data: { user },
     } = await supabase.auth.getUser()

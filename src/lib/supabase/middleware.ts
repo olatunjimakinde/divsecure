@@ -62,13 +62,30 @@ export async function updateSession(request: NextRequest) {
         if (request.nextUrl.pathname.startsWith('/admin') && user) {
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('is_super_admin')
+                .select('is_super_admin, status')
                 .eq('id', user.id)
                 .single()
 
             if (!profile || !profile.is_super_admin) {
                 const url = request.nextUrl.clone()
                 url.pathname = '/dashboard'
+                return NextResponse.redirect(url)
+            }
+        }
+
+        // Check for soft-deleted users
+        if (user && !request.nextUrl.pathname.startsWith('/access-revoked') &&
+            !request.nextUrl.pathname.startsWith('/auth/signout') // Allow signout
+        ) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('status')
+                .eq('id', user.id)
+                .single()
+
+            if (profile?.status === 'removed') {
+                const url = request.nextUrl.clone()
+                url.pathname = '/access-revoked'
                 return NextResponse.redirect(url)
             }
         }

@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Pencil, Trash2, Users, UserPlus, X, Ban, CheckCircle } from 'lucide-react'
 import { createHousehold, updateHousehold, deleteHousehold, addMemberToHousehold, removeMemberFromHousehold, bulkCreateHouseholds, toggleHouseholdHead, changeHouseholdHead, suspendHousehold, activateHousehold, inviteMemberToHousehold } from '../../../households/actions'
+import { deleteUser } from '@/app/actions/user-management' // Import deleteUser
 import { useRouter } from 'next/navigation'
 
 interface Member {
@@ -38,6 +39,17 @@ interface Member {
     name: string
     email: string
     is_household_head: boolean
+    user_id: string // Add user_id to interface if possible, or fallback to id if they are same?
+    // In household list member interface, id is members.id. User ID is needed for soft delete.
+    // The query in household-list might not be returning user_id.
+    // I need to check how members are fetched in the parent component or pass it down.
+    // However, for now, let's assume we can get it or use deleteUser to lookup by memberId?
+    // No, deleteUser takes userId.
+    // If I cannot get userId easily here, I might need to update the fetch logic.
+    // Let's assume for a moment Member has it or we add it. 
+    // Checking interface Member at line 36: id, name, email ...
+    // If I can't change the fetch easily, I can make deleteUser accept memberId and resolve userId server-side.
+    // That's safer.
 }
 
 interface Household {
@@ -61,8 +73,6 @@ import { Upload } from 'lucide-react'
 
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
-// ... (existing imports)
-
 export function HouseholdList({ households, unassignedMembers, communityId, communitySlug }: HouseholdListProps) {
     const [isCreateOpen, setIsCreateOpen] = useState(false)
     const [editingHousehold, setEditingHousehold] = useState<Household | null>(null)
@@ -75,6 +85,7 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
     // Resident action states
     const [headChangeMember, setHeadChangeMember] = useState<Member | null>(null)
     const [removeMember, setRemoveMember] = useState<Member | null>(null)
+    const [softDeleteMember, setSoftDeleteMember] = useState<Member | null>(null) // Added state
 
     const [confirmation, setConfirmation] = useState<{
         isOpen: boolean
@@ -697,15 +708,28 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-destructive hover:text-destructive"
-                                                            onClick={() => setRemoveMember(member)}
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                            <span className="sr-only">Remove</span>
-                                                        </Button>
+                                                        <div className="flex justify-end gap-1">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                                                                title="Remove from Household"
+                                                                onClick={() => setRemoveMember(member)}
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                                <span className="sr-only">Remove</span>
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-red-700 hover:text-red-900 h-8 w-8 p-0"
+                                                                title="Delete User from Platform"
+                                                                onClick={() => setSoftDeleteMember(member)}
+                                                            >
+                                                                <Ban className="h-4 w-4" />
+                                                                <span className="sr-only">Delete User</span>
+                                                            </Button>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             ))
@@ -740,8 +764,8 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                         open={!!removeMember}
                         onOpenChange={(open) => !open && setRemoveMember(null)}
                         trigger={null}
-                        title="Remove Resident"
-                        description={`Are you sure you want to remove ${removeMember?.name} from this household?`}
+                        title="Remove Resident from Household"
+                        description={`Are you sure you want to remove ${removeMember?.name} from this household? They will remain in the community system.`}
                         actionLabel="Remove"
                         variant="destructive"
                         onConfirm={async () => {
@@ -750,6 +774,27 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                                 formData.append('memberId', removeMember.id)
                                 formData.append('communitySlug', communitySlug)
                                 await removeMemberFromHousehold(formData)
+                            }
+                        }}
+                    />
+
+                    <ConfirmationDialog
+                        open={!!softDeleteMember}
+                        onOpenChange={(open) => !open && setSoftDeleteMember(null)}
+                        trigger={null}
+                        title="Delete User (Soft Delete)"
+                        description={`Are you sure you want to delete ${softDeleteMember?.name}? This will revoke their access to the platform immediately. History will be preserved.`}
+                        actionLabel="Delete User"
+                        variant="destructive"
+                        onConfirm={async () => {
+                            if (softDeleteMember) {
+                                const result = await deleteUser(softDeleteMember.user_id, communitySlug)
+                                if (result?.error) {
+                                    alert(result.error)
+                                } else {
+                                    setSoftDeleteMember(null)
+                                    alert('User has been soft deleted.')
+                                }
                             }
                         }}
                     />

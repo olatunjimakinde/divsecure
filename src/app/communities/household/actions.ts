@@ -210,13 +210,27 @@ export async function inviteResidentByHead(formData: FormData) {
     // 1. Check if user exists with this email (by profile)
     const { data: profile } = await supabaseAdmin
         .from('profiles')
-        .select('id')
+        .select('id, status')
         .eq('email', email)
         .single()
-
     let userId = profile?.id
 
-    if (!userId) {
+    if (profile && profile.status === 'removed' && userId) {
+        // Reactivate User
+        console.log(`Reactivating soft-deleted user: ${email}`)
+        const { error: reactivateError } = await supabaseAdmin
+            .from('profiles')
+            .update({
+                status: 'active',
+                deleted_at: null
+            })
+            .eq('id', userId)
+
+        if (reactivateError) {
+            console.error('Error reactivating user:', reactivateError)
+            return { error: 'Failed to reactivate user' }
+        }
+    } else if (!userId) {
         // User doesn't exist. Invite them.
         const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
             redirectTo: `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`

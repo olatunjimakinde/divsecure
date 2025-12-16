@@ -494,12 +494,27 @@ export async function inviteMemberToHouseholdCore(supabaseAdmin: any, communityI
 
     const { data: profile } = await supabaseAdmin
         .from('profiles')
-        .select('id')
+        .select('id, status')
         .eq('email', email)
         .single()
 
     if (profile) {
         userId = profile.id
+        // Check for soft delete
+        if (profile.status === 'removed') {
+            const { error: reactivateError } = await supabaseAdmin
+                .from('profiles')
+                .update({
+                    status: 'active',
+                    deleted_at: null
+                })
+                .eq('id', userId)
+
+            if (reactivateError) {
+                console.error('Error reactivating user:', reactivateError)
+                return { error: 'Failed to reactivate user' }
+            }
+        }
     } else {
         // Invite User
         const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`

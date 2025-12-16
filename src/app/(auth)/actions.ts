@@ -29,14 +29,27 @@ export async function login(formData: FormData) {
 
     const { email, password } = validation.data
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: { user }, error } = await supabase.auth.signInWithPassword({
         email,
         password,
     })
 
-    if (error) {
+    if (error || !user) {
         console.error('Login failed for email:', email, 'Error:', error)
-        redirect('/login?message=' + encodeURIComponent(error.message))
+        const message = error ? error.message : 'Login failed'
+        redirect('/login?message=' + encodeURIComponent(message))
+    }
+
+    // Check if user is soft-deleted
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('status')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.status === 'removed') {
+        await supabase.auth.signOut()
+        redirect('/login?message=' + encodeURIComponent('Your access has been removed by the community administrator.'))
     }
 
     revalidatePath('/', 'layout')

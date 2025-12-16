@@ -104,6 +104,7 @@ export default async function ManagerDashboardPage({
         member_count: h.members?.length || 0,
         members: h.members?.map((m: any) => ({
             id: m.id,
+            user_id: m.user_id,
             name: m.profiles?.full_name || 'Unknown',
             email: m.profiles?.email || 'No email',
             is_household_head: m.is_household_head
@@ -112,6 +113,7 @@ export default async function ManagerDashboardPage({
 
     const formattedUnassigned = unassignedMembers?.map((m: any) => ({
         id: m.id,
+        user_id: m.user_id,
         name: m.profiles?.full_name || 'Unknown',
         email: m.profiles?.email || 'No email',
         is_household_head: false // Unassigned members cannot be heads

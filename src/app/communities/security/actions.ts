@@ -1,278 +1,209 @@
-'use server'
-
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { safeAction } from '@/lib/safe-action'
+import { createGuardSchema, updateGuardSchema, toggleGuardStatusSchema, deleteGuardSchema } from './schemas'
 
 // --- Guard Management ---
 
-export async function createGuard(formData: FormData) {
-    const supabase = await createClient()
-    const supabaseAdmin = await createAdminClient()
+export const createGuard = safeAction({
+    schema: createGuardSchema,
+    action: async (data, user) => {
+        const supabaseAdmin = await createAdminClient()
 
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const fullName = formData.get('fullName') as string
-    const communityId = formData.get('communityId') as string
-    const communitySlug = formData.get('communitySlug') as string
-    const isHead = formData.get('isHead') === 'on'
+        const { email, password, fullName, communityId, communitySlug, isHead: isHeadRaw } = data
+        const isHead = isHeadRaw === 'on'
 
-    // Validate email
-    const emailSchema = z.string().email()
-    const emailValidation = emailSchema.safeParse(email)
-    if (!emailValidation.success) {
-        return { error: 'Invalid email format' }
-    }
+        // 1. Check permissions (Manager or Head of Security)
+        // User is already authenticated by safeAction
+        const supabase = await createClient() // Need non-admin for normal queries? Or use the user passed by safeAction?
+        // safeAction passes the Auth User object. We need to check role.
 
-    // 1. Check permissions (Manager or Head of Security)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
+        const { data: currentUserMember } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', communityId)
+            .eq('user_id', user.id)
+            .single()
 
-    const { data: currentUserMember } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', communityId)
-        .eq('user_id', user.id)
-        .single()
+        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+            throw new Error('Unauthorized')
+        }
 
-    if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-        return { error: 'Unauthorized' }
-    }
+        // 1.5 Check if Head of Security already exists if creating one
+        if (isHead) {
+            const { data: existingHead } = await supabaseAdmin
+                .from('members')
+                .select('id')
+                .eq('community_id', communityId)
+                .eq('role', 'head_of_security')
+                .single()
 
-    // 1.5 Check if Head of Security already exists if creating one
-    if (isHead) {
-        const { data: existingHead } = await supabaseAdmin
+            if (existingHead) {
+                throw new Error('A Head of Security already exists for this community.')
+            }
+        }
+
+        // 2. Create User Directly
+        let userId = ''
+        const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+            user_metadata: { full_name: fullName }
+        })
+
+        if (createError) {
+            // Check if user already exists (logic copied from original)
+            if (createError.message.includes('already registered') || createError.status === 422) {
+                const { data: existingProfile } = await supabaseAdmin
+                    .from('profiles')
+                    .select('id')
+                    .eq('email', email)
+                    .single()
+
+                if (existingProfile) {
+                    userId = existingProfile.id
+                    // Update password
+                    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+                        userId,
+                        { password: password, email_confirm: true }
+                    )
+                    if (updateError) throw new Error('User exists but failed to update password: ' + updateError.message)
+                } else {
+                    throw new Error('User already exists but could not be found.')
+                }
+            } else {
+                throw new Error(createError.message)
+            }
+        } else {
+            userId = userData.user.id
+        }
+
+        // 3. Add to Members
+        const { data: existingMember } = await supabaseAdmin
             .from('members')
             .select('id')
             .eq('community_id', communityId)
-            .eq('role', 'head_of_security')
+            .eq('user_id', userId)
             .single()
 
-        if (existingHead) {
-            return { error: 'A Head of Security already exists for this community.' }
+        if (existingMember) {
+            throw new Error('User is already a member of this community.')
         }
-    }
 
-    // 2. Create User Directly
-    let userId = ''
-    const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: email,
-        password: password,
-        email_confirm: true,
-        user_metadata: { full_name: fullName }
-    })
+        const { error: memberError } = await supabaseAdmin
+            .from('members')
+            .insert({
+                community_id: communityId,
+                user_id: userId,
+                role: isHead ? 'head_of_security' : 'guard',
+                status: 'approved'
+            })
 
-    console.log('Create Guard Result:', {
-        success: !createError,
-        userId: userData?.user?.id,
-        email: email,
-        confirmed_at: userData?.user?.confirmed_at,
-        email_confirmed_at: userData?.user?.email_confirmed_at
-    })
-
-    if (createError) {
-        // Check if user already exists
-        if (createError.message.includes('already registered') || createError.status === 422) {
-            // Try to find the user
-            // We can't search by email directly with admin client easily without listUsers which is expensive or restricted?
-            // Actually listUsers supports filtering by email? No, not easily in v2?
-            // But we can try to invite them? Or just assume we can't get the ID easily if we don't have it.
-            // Wait, we can use `listUsers` with filter?
-            // Or we can try to get user by email if we had a way.
-            // Actually, if they exist, we might want to tell the manager "User already exists".
-            // But if we want to support adding existing users, we need their ID.
-
-            // Let's try to fetch the profile by email if possible? 
-            // Profiles table is public read? No.
-            // Admin client can read profiles.
-            const { data: existingProfile } = await supabaseAdmin
-                .from('profiles')
-                .select('id')
-                .eq('email', email)
-                .single()
-
-            if (existingProfile) {
-                userId = existingProfile.id
-
-                // Update password for existing user to ensure they can login with new credentials
-                const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-                    userId,
-                    { password: password, email_confirm: true }
-                )
-
-                if (updateError) {
-                    console.error('Failed to update password for existing user:', updateError)
-                    return { error: 'User exists but failed to update password: ' + updateError.message }
-                }
-
-                // Verify the update
-                const { data: { user: updatedUser }, error: fetchError } = await supabaseAdmin.auth.admin.getUserById(userId)
-                console.log('Updated Existing User State:', {
-                    id: updatedUser?.id,
-                    email: updatedUser?.email,
-                    confirmed_at: updatedUser?.confirmed_at,
-                    email_confirmed_at: updatedUser?.email_confirmed_at,
-                    banned_until: (updatedUser as any)?.banned_until,
-                    app_metadata: updatedUser?.app_metadata,
-                    fetchError
-                })
-
-                // Verify login immediately
-                const verifyClient = await createClient()
-                const { error: verifyLoginError } = await verifyClient.auth.signInWithPassword({
-                    email,
-                    password
-                })
-
-                console.log('Immediate Login Verification:', {
-                    success: !verifyLoginError,
-                    error: verifyLoginError
-                })
-
-            } else {
-                console.error('Create user error:', createError)
-                return { error: 'User already exists but could not be found. Please contact support.' }
-            }
-        } else {
-            console.error('Create user error:', createError)
-            return { error: createError.message }
+        if (memberError) {
+            throw new Error(`Failed to add guard: ${memberError.message}`)
         }
-    } else {
-        userId = userData.user.id
+
+        revalidatePath(`/communities/${communitySlug}/manager/security`)
+        return { success: true }
     }
+})
 
-    // 3. Add to Members as Guard
-    // Check if already a member
-    const { data: existingMember } = await supabaseAdmin
-        .from('members')
-        .select('id')
-        .eq('community_id', communityId)
-        .eq('user_id', userId)
-        .single()
+export const updateGuard = safeAction({
+    schema: updateGuardSchema,
+    action: async (data, user) => {
+        const supabaseAdmin = await createAdminClient()
+        const { memberId, communitySlug, fullName, isHead: isHeadRaw } = data
+        const isHead = isHeadRaw === 'on'
+        const role = isHead ? 'head_of_security' : 'guard'
 
-    if (existingMember) {
-        return { error: 'User is already a member of this community.' }
+        const { data: member } = await supabaseAdmin
+            .from('members')
+            .select('user_id, community_id')
+            .eq('id', memberId)
+            .single()
+
+        if (!member) throw new Error('Member not found')
+
+        // Prevent self-demotion/role change if needed? 
+        // User didn't strictly ask for this, but good practice.
+        // Actually, Head Guard might demote themselves accidentally? Let's allow for now as not requested.
+
+        const supabase = await createClient()
+        const { data: currentUserMember } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', member.community_id)
+            .eq('user_id', user.id)
+            .single()
+
+        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+            throw new Error('Unauthorized')
+        }
+
+        const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({ full_name: fullName })
+            .eq('id', member.user_id)
+
+        if (profileError) throw new Error('Failed to update profile')
+
+        const { error: memberError } = await supabaseAdmin
+            .from('members')
+            .update({ role: role })
+            .eq('id', memberId)
+
+        if (memberError) throw new Error('Failed to update member role')
+
+        revalidatePath(`/communities/${communitySlug}/manager/security`)
+        return { success: true }
     }
+})
 
-    const { error: memberError } = await supabaseAdmin
-        .from('members')
-        .insert({
-            community_id: communityId,
-            user_id: userId,
-            role: isHead ? 'head_of_security' : 'guard',
-            status: 'approved'
-        })
+export const toggleGuardStatus = safeAction({
+    schema: toggleGuardStatusSchema,
+    action: async (data, user) => {
+        const supabaseAdmin = await createAdminClient()
+        const { memberId, communitySlug, currentStatus } = data
+        const targetStatus = currentStatus === 'approved' ? 'rejected' : 'approved'
 
-    if (memberError) {
-        console.error('Member creation error:', memberError)
-        return { error: `Failed to add guard: ${memberError.message} (${memberError.details})` }
+        const { data: member } = await supabaseAdmin
+            .from('members')
+            .select('community_id, user_id')
+            .eq('id', memberId)
+            .single()
+
+        if (!member) throw new Error('Member not found')
+
+        // Prevent self-suspension
+        if (member.user_id === user.id) {
+            throw new Error('You cannot suspend yourself.')
+        }
+
+        const supabase = await createClient()
+        const { data: currentUserMember } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', member.community_id)
+            .eq('user_id', user.id)
+            .single()
+
+        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+            throw new Error('Unauthorized')
+        }
+
+        const { error } = await supabaseAdmin
+            .from('members')
+            .update({ status: targetStatus })
+            .eq('id', memberId)
+
+        if (error) throw new Error('Failed to update status')
+
+        revalidatePath(`/communities/${communitySlug}/manager/security`)
+        return { success: true }
     }
-
-    revalidatePath(`/communities/${communitySlug}/manager/security`)
-    return { success: true }
-}
-
-export async function updateGuard(formData: FormData) {
-    const supabase = await createClient()
-    const supabaseAdmin = await createAdminClient()
-    const memberId = formData.get('memberId') as string
-    const communitySlug = formData.get('communitySlug') as string
-    const fullName = formData.get('fullName') as string
-    const isHead = formData.get('isHead') === 'on'
-    const role = isHead ? 'head_of_security' : 'guard'
-
-    // 1. Get Member to find User ID and Community ID
-    const { data: member } = await supabaseAdmin
-        .from('members')
-        .select('user_id, community_id')
-        .eq('id', memberId)
-        .single()
-
-    if (!member) return { error: 'Member not found' }
-
-    // 2. Check Permissions
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
-
-    const { data: currentUserMember } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', member.community_id)
-        .eq('user_id', user.id)
-        .single()
-
-    if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-        return { error: 'Unauthorized' }
-    }
-
-    // 3. Update Profile Name
-    const { error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .update({ full_name: fullName })
-        .eq('id', member.user_id)
-
-    if (profileError) {
-        console.error('Update profile error:', profileError)
-        return { error: 'Failed to update profile' }
-    }
-
-    // 4. Update Member Role
-    const { error: memberError } = await supabaseAdmin
-        .from('members')
-        .update({ role: role })
-        .eq('id', memberId)
-
-    if (memberError) {
-        console.error('Update member error:', memberError)
-        return { error: 'Failed to update member role' }
-    }
-
-    revalidatePath(`/communities/${communitySlug}/manager/security`)
-    return { success: true }
-}
-
-export async function toggleGuardStatus(formData: FormData) {
-    const supabase = await createClient()
-    const supabaseAdmin = await createAdminClient()
-    const memberId = formData.get('memberId') as string
-    const communitySlug = formData.get('communitySlug') as string
-    const currentStatus = formData.get('currentStatus') as string
-    const targetStatus = currentStatus === 'approved' ? 'rejected' : 'approved'
-
-    // 1. Get Member to find Community ID
-    const { data: member } = await supabaseAdmin
-        .from('members')
-        .select('community_id')
-        .eq('id', memberId)
-        .single()
-
-    if (!member) return { error: 'Member not found' }
-
-    // 2. Check Permissions
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
-
-    const { data: currentUserMember } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', member.community_id)
-        .eq('user_id', user.id)
-        .single()
-
-    if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-        return { error: 'Unauthorized' }
-    }
-
-    const { error } = await supabaseAdmin
-        .from('members')
-        .update({ status: targetStatus })
-        .eq('id', memberId)
-
-    if (error) return { error: 'Failed to update status' }
-
-    revalidatePath(`/communities/${communitySlug}/manager/security`)
-    return { success: true }
-}
+})
 
 export async function promoteToHead(formData: FormData) {
     const supabase = await createClient()
@@ -327,62 +258,52 @@ export async function demoteToGuard(formData: FormData) {
     return { success: true }
 }
 
-export async function deleteGuard(formData: FormData) {
-    const supabase = await createClient()
-    const supabaseAdmin = await createAdminClient()
-    const memberId = formData.get('memberId') as string
-    const communitySlug = formData.get('communitySlug') as string
+export const deleteGuard = safeAction({
+    schema: deleteGuardSchema,
+    action: async (data, user) => {
+        const supabaseAdmin = await createAdminClient()
+        const { memberId, communitySlug } = data
 
-    // 1. Get Member to find User ID and Community ID
-    const { data: member } = await supabaseAdmin
-        .from('members')
-        .select('user_id, community_id')
-        .eq('id', memberId)
-        .single()
+        const { data: member } = await supabaseAdmin
+            .from('members')
+            .select('user_id, community_id')
+            .eq('id', memberId)
+            .single()
 
-    if (!member) return { error: 'Member not found' }
+        if (!member) throw new Error('Member not found')
 
-    // 2. Check Permissions
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { error: 'Unauthorized' }
+        // Prevent self-deletion
+        // This logic existed before, but now we confirm it works within safeAction
+        if (member.user_id === user.id) {
+            throw new Error('You cannot delete yourself.')
+        }
 
-    const { data: currentUserMember } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', member.community_id)
-        .eq('user_id', user.id)
-        .single()
+        const supabase = await createClient()
+        const { data: currentUserMember } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', member.community_id)
+            .eq('user_id', user.id)
+            .single()
 
-    if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-        return { error: 'Unauthorized' }
+        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+            throw new Error('Unauthorized')
+        }
+
+        const { error: deleteMemberError } = await supabaseAdmin
+            .from('members')
+            .delete()
+            .eq('id', memberId)
+
+        if (deleteMemberError) throw new Error('Failed to delete member')
+
+        const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(member.user_id)
+        if (deleteUserError) console.error('Delete auth user error:', deleteUserError)
+
+        revalidatePath(`/communities/${communitySlug}/manager/security`)
+        return { success: true }
     }
-
-    // Prevent self-deletion
-    if (member.user_id === user.id) {
-        return { error: 'You cannot delete yourself.' }
-    }
-
-    // 3. Delete from Members
-    const { error: deleteMemberError } = await supabaseAdmin
-        .from('members')
-        .delete()
-        .eq('id', memberId)
-
-    if (deleteMemberError) {
-        console.error('Delete member error:', deleteMemberError)
-        return { error: 'Failed to delete member' }
-    }
-
-    // 4. Delete Auth User
-    const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(member.user_id)
-
-    if (deleteUserError) {
-        console.error('Delete auth user error:', deleteUserError)
-    }
-
-    revalidatePath(`/communities/${communitySlug}/manager/security`)
-    return { success: true }
-}
+})
 
 
 // --- Shift Management ---

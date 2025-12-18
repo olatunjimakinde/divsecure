@@ -32,6 +32,12 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#FFFFFF",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  // This is crucial for mobile keyboards not to cover inputs
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({

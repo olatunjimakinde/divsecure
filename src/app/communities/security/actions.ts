@@ -178,6 +178,8 @@ export const toggleGuardStatus = safeAction({
 
         if (!member) throw new Error('Member not found')
 
+        console.log('[DEBUG] toggleGuardStatus', { memberUserId: member.user_id, sessionUserId: user.id })
+
         // Prevent self-suspension
         if (member.user_id === user.id) {
             throw new Error('You cannot suspend yourself.')
@@ -273,6 +275,8 @@ export const deleteGuard = safeAction({
             .single()
 
         if (!member) throw new Error('Member not found')
+
+        console.log('[DEBUG] deleteGuard', { memberUserId: member.user_id, sessionUserId: user.id })
 
         // Prevent self-deletion
         // This logic existed before, but now we confirm it works within safeAction

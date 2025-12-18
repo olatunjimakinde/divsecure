@@ -20,9 +20,10 @@ interface GuardListProps {
     communityId: string
     communitySlug: string
     guards: any[]
+    currentUserId: string
 }
 
-export function GuardList({ communityId, communitySlug, guards }: GuardListProps) {
+export function GuardList({ communityId, communitySlug, guards, currentUserId }: GuardListProps) {
     return (
         <>
             <div className="flex justify-end">
@@ -68,24 +69,28 @@ export function GuardList({ communityId, communitySlug, guards }: GuardListProps
                                             {/* Edit Guard */}
                                             <EditGuardDialog guard={guard} communitySlug={communitySlug} />
 
-                                            {/* Delete Guard */}
-                                            <DeleteGuardButton memberId={guard.id} communitySlug={communitySlug} />
+                                            {/* Delete Guard - Cannot Delete Self */}
+                                            {guard.user_id !== currentUserId && (
+                                                <DeleteGuardButton memberId={guard.id} communitySlug={communitySlug} />
+                                            )}
 
-                                            {/* Suspend/Activate */}
-                                            <form action={async (formData) => {
-                                                await toggleGuardStatus(null, formData)
-                                            }}>
-                                                <input type="hidden" name="memberId" value={guard.id} />
-                                                <input type="hidden" name="communitySlug" value={communitySlug} />
-                                                <input type="hidden" name="currentStatus" value={guard.status} />
-                                                <Button
-                                                    size="sm"
-                                                    variant={guard.status === 'approved' ? 'ghost' : 'outline'}
-                                                    className={guard.status === 'approved' ? 'text-destructive' : 'text-green-600'}
-                                                >
-                                                    {guard.status === 'approved' ? 'Suspend' : 'Activate'}
-                                                </Button>
-                                            </form>
+                                            {/* Suspend/Activate - Cannot Suspend Self */}
+                                            {guard.user_id !== currentUserId && (
+                                                <form action={async (formData) => {
+                                                    await toggleGuardStatus(null, formData)
+                                                }}>
+                                                    <input type="hidden" name="memberId" value={guard.id} />
+                                                    <input type="hidden" name="communitySlug" value={communitySlug} />
+                                                    <input type="hidden" name="currentStatus" value={guard.status} />
+                                                    <Button
+                                                        size="sm"
+                                                        variant={guard.status === 'approved' ? 'ghost' : 'outline'}
+                                                        className={guard.status === 'approved' ? 'text-destructive' : 'text-green-600'}
+                                                    >
+                                                        {guard.status === 'approved' ? 'Suspend' : 'Activate'}
+                                                    </Button>
+                                                </form>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

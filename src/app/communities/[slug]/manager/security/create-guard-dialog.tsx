@@ -36,7 +36,7 @@ export function CreateGuardDialog({ communityId, communitySlug }: CreateGuardDia
         const formData = new FormData(e.currentTarget)
 
         try {
-            const result = await createGuard(formData)
+            const result = await createGuard(null, formData)
             if (result?.error) {
                 setError(result.error)
             } else {

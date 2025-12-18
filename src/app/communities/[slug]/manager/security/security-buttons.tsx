@@ -22,7 +22,7 @@ export function ToggleGuardStatusButton({ memberId, communitySlug, currentStatus
         // Actually, let's just stick to the requirement: "delete or suspend".
         return (
             <form action={async (formData) => {
-                await toggleGuardStatus(formData)
+                await toggleGuardStatus(null, formData)
             }}>
                 <input type="hidden" name="memberId" value={memberId} />
                 <input type="hidden" name="communitySlug" value={communitySlug} />
@@ -58,7 +58,7 @@ export function ToggleGuardStatusButton({ memberId, communitySlug, currentStatus
                 formData.append('memberId', memberId)
                 formData.append('communitySlug', communitySlug)
                 formData.append('currentStatus', currentStatus)
-                await toggleGuardStatus(formData)
+                await toggleGuardStatus(null, formData)
             }}
         />
     )

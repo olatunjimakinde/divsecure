@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { toggleGuardStatus, deleteShift } from '@/app/communities/security/actions'
+import { toast } from 'sonner'
 import { Trash2 } from 'lucide-react'
 
 interface SecurityButtonProps {
@@ -22,7 +23,12 @@ export function ToggleGuardStatusButton({ memberId, communitySlug, currentStatus
         // Actually, let's just stick to the requirement: "delete or suspend".
         return (
             <form action={async (formData) => {
-                await toggleGuardStatus(null, formData)
+                const result = await toggleGuardStatus(null, formData)
+                if (result?.error) {
+                    toast.error(result.error)
+                } else {
+                    toast.success('Guard activated successfully')
+                }
             }}>
                 <input type="hidden" name="memberId" value={memberId} />
                 <input type="hidden" name="communitySlug" value={communitySlug} />
@@ -58,7 +64,12 @@ export function ToggleGuardStatusButton({ memberId, communitySlug, currentStatus
                 formData.append('memberId', memberId)
                 formData.append('communitySlug', communitySlug)
                 formData.append('currentStatus', currentStatus)
-                await toggleGuardStatus(null, formData)
+                const result = await toggleGuardStatus(null, formData)
+                if (result?.error) {
+                    toast.error(result.error)
+                } else {
+                    toast.success('Guard suspended successfully')
+                }
             }}
         />
     )

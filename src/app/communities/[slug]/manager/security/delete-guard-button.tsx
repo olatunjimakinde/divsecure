@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Trash2 } from 'lucide-react'
 import { deleteGuard } from '../../../security/actions'
-import { toast } from 'sonner'
 
 interface DeleteGuardButtonProps {
     memberId: string
@@ -27,12 +26,7 @@ export function DeleteGuardButton({ memberId, communitySlug }: DeleteGuardButton
                 const formData = new FormData()
                 formData.append('memberId', memberId)
                 formData.append('communitySlug', communitySlug)
-                const result = await deleteGuard(null, formData)
-                if (result?.error) {
-                    toast.error(result.error)
-                } else {
-                    toast.success('Guard deleted successfully')
-                }
+                await deleteGuard(formData)
             }}
         />
     )

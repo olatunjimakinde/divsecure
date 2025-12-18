@@ -46,7 +46,7 @@ export function EditGuardDialog({ guard, communitySlug }: EditGuardDialogProps) 
                     </DialogDescription>
                 </DialogHeader>
                 <form action={async (formData) => {
-                    await updateGuard(null, formData)
+                    await updateGuard(formData)
                     setOpen(false)
                 }}>
                     <input type="hidden" name="memberId" value={guard.id} />

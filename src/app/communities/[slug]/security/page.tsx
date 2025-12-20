@@ -333,7 +333,6 @@ export default async function GuardSecurityPage({
                             communityId={community.id}
                             communitySlug={slug}
                             guards={guards || []}
-                            currentUserId={user.id}
                         />
                     </TabsContent>
                 )}

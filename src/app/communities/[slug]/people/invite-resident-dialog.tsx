@@ -26,6 +26,7 @@ interface InviteResidentDialogProps {
 export function InviteResidentDialog({ communityId, communitySlug }: InviteResidentDialogProps) {
     const [open, setOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()

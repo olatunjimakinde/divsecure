@@ -784,6 +784,83 @@ export interface Database {
                         referencedColumns: ["id"]
                     }
                 ]
+            },
+            billing_settings: {
+                Row: {
+                    community_id: string
+                    block_access_codes_if_unpaid: boolean
+                    grace_period_days: number
+                    security_guard_exempt: boolean
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    community_id: string
+                    block_access_codes_if_unpaid?: boolean
+                    grace_period_days?: number
+                    security_guard_exempt?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    community_id?: string
+                    block_access_codes_if_unpaid?: boolean
+                    grace_period_days?: number
+                    security_guard_exempt?: boolean
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "billing_settings_community_id_fkey"
+                        columns: ["community_id"]
+                        referencedRelation: "communities"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            },
+            recurring_charges: {
+                Row: {
+                    id: string
+                    community_id: string
+                    title: string
+                    amount: number
+                    frequency: 'monthly' | 'quarterly' | 'yearly'
+                    active: boolean
+                    last_generated_at: string | null
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    community_id: string
+                    title: string
+                    amount: number
+                    frequency: 'monthly' | 'quarterly' | 'yearly'
+                    active?: boolean
+                    last_generated_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    community_id?: string
+                    title?: string
+                    amount?: number
+                    frequency?: 'monthly' | 'quarterly' | 'yearly'
+                    active?: boolean
+                    last_generated_at?: string | null
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "recurring_charges_community_id_fkey"
+                        columns: ["community_id"]
+                        referencedRelation: "communities"
+                        referencedColumns: ["id"]
+                    }
+                ]
             }
         }
         Views: {

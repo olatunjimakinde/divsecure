@@ -29,6 +29,41 @@ export async function createVisitorCode(formData: FormData) {
         redirect('/login')
     }
 
+    // Check Billing Enforcement
+    const { data: settings } = await supabase
+        .from('billing_settings')
+        .select('*')
+        .eq('community_id', communityId)
+        .single()
+
+    if (settings?.block_access_codes_if_unpaid) {
+        // Get member details for role and household
+        const { data: member } = await supabase
+            .from('members')
+            .select('role, household_id')
+            .eq('community_id', communityId)
+            .eq('user_id', user.id)
+            .single()
+
+        const isGuard = member?.role === 'guard' || member?.role === 'head_of_security'
+
+        // If not exempt (either not a guard, or guards are not exempt)
+        if (!isGuard || !settings.security_guard_exempt) {
+            if (member?.household_id) {
+                // Check for overdue bills
+                const { count } = await supabase
+                    .from('bills')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('household_id', member.household_id)
+                    .eq('status', 'overdue')
+
+                if (count && count > 0) {
+                    redirect(`/communities/${communitySlug}/visitors?error=Restricted: Please pay overdue bills to generate access codes`)
+                }
+            }
+        }
+    }
+
     const accessCode = generateAccessCode()
 
     const { error } = await supabase.from('visitor_codes').insert({

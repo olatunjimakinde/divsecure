@@ -89,7 +89,7 @@ export async function inviteResident(formData: FormData) {
             data: {
                 full_name: fullName,
             },
-            redirectTo: `${getURL()}auth/callback?next=/communities/${communitySlug}`
+            redirectTo: `${getURL()}auth/callback?next=${encodeURIComponent('/communities/' + communitySlug)}`
         })
 
         if (inviteError) {
@@ -102,7 +102,7 @@ export async function inviteResident(formData: FormData) {
                     email: email,
                     options: {
                         data: { full_name: fullName },
-                        redirectTo: `${getURL()}auth/callback?next=/communities/${communitySlug}`
+                        redirectTo: `${getURL()}auth/callback?next=${encodeURIComponent('/communities/' + communitySlug)}`
                     }
                 })
 

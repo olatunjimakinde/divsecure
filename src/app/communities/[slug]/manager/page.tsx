@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { SearchInput } from '@/components/search-input'
 import { VisitorLogsList } from './visitors/visitor-logs-list'
 import { GlobalSearch } from '../../manager/global-search'
+import { InviteResidentDialog } from './invite-resident-dialog'
 
 export default async function ManagerDashboardPage({
     params,
@@ -156,11 +157,14 @@ export default async function ManagerDashboardPage({
 
                 <TabsContent value="residents" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
                     <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle>Residents</CardTitle>
-                            <CardDescription>
-                                Manage resident access and approvals.
-                            </CardDescription>
+                        <CardHeader className="p-4 sm:p-6 flex flex-row items-center justify-between space-y-0 pb-2">
+                            <div className="flex flex-col space-y-1.5">
+                                <CardTitle>Residents</CardTitle>
+                                <CardDescription>
+                                    Manage resident access and approvals.
+                                </CardDescription>
+                            </div>
+                            <InviteResidentDialog communityId={community.id} communitySlug={slug} />
                         </CardHeader>
                         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <ResidentsList communityId={community.id} communitySlug={slug} searchQuery={query} />

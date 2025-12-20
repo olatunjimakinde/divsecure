@@ -321,8 +321,8 @@ export default async function CommunityLayout({
                                         </Link>
                                     </Button>
                                     <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
-                                        <Link href={`/communities/${slug}/manager/settings/billing`}>
-                                            Billing & Subscription
+                                        <Link href={`/communities/${slug}/manager/billing`}>
+                                            Billing
                                         </Link>
                                     </Button>
                                 </nav>

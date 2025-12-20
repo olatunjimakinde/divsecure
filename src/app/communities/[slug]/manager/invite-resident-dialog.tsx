@@ -1,5 +1,7 @@
 'use client'
 
+import { BulkInviteDialog } from './bulk-invite-dialog'
+
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,6 +39,8 @@ export function InviteResidentDialog({ communityId, communitySlug, households }:
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
 
+    const hasHouseholds = households.length > 0
+
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setIsLoading(true)
@@ -44,7 +48,14 @@ export function InviteResidentDialog({ communityId, communitySlug, households }:
         const formData = new FormData(event.currentTarget)
         formData.append('communityId', communityId)
         formData.append('communitySlug', communitySlug)
-        // householdId is present in form if selected (Select name="householdId")
+
+        // Validation: Check if household is selected
+        const householdId = formData.get('householdId')
+        if (!householdId || householdId === 'none') {
+            toast.error('Please select a household.')
+            setIsLoading(false)
+            return
+        }
 
         try {
             const result = await inviteResident(formData)
@@ -63,19 +74,34 @@ export function InviteResidentDialog({ communityId, communitySlug, households }:
         }
     }
 
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button>
+    if (!hasHouseholds) {
+        return (
+            <div className="flex gap-2">
+                <BulkInviteDialog communityId={communityId} communitySlug={communitySlug} />
+                <Button disabled title="Create a household first" variant="outline" className="opacity-50">
                     <Plus className="mr-2 h-4 w-4" />
                     Invite Resident
                 </Button>
-            </DialogTrigger>
+            </div>
+        )
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <div className="flex gap-2 items-center">
+                <BulkInviteDialog communityId={communityId} communitySlug={communitySlug} />
+                <DialogTrigger asChild>
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Invite Resident
+                    </Button>
+                </DialogTrigger>
+            </div>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Invite Resident</DialogTitle>
                     <DialogDescription>
-                        Send an invitation to a new resident. They will receive an email to set their password.
+                        Send an invitation to a new resident. They must be assigned to an existing household.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={onSubmit}>
@@ -102,9 +128,9 @@ export function InviteResidentDialog({ communityId, communitySlug, households }:
 
                         <div className="grid gap-2">
                             <Label htmlFor="householdId">
-                                Household (Optional)
+                                Household
                             </Label>
-                            <Select name="householdId">
+                            <Select name="householdId" required>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a household..." />
                                 </SelectTrigger>
@@ -114,22 +140,11 @@ export function InviteResidentDialog({ communityId, communitySlug, households }:
                                             {h.name}
                                         </SelectItem>
                                     ))}
-                                    <SelectItem value="none">None (Unassigned)</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-[10px] text-muted-foreground">
-                                Assigning to a household will automatically group them.
+                                The resident will be added to this unit.
                             </p>
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="unitNumber">Unit Number</Label>
-                            <Input
-                                id="unitNumber"
-                                name="unitNumber"
-                                placeholder="101"
-                                required
-                            />
                         </div>
                     </div>
                     <DialogFooter>

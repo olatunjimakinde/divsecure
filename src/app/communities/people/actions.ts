@@ -8,10 +8,9 @@ import { getURL } from '@/lib/utils'
 const inviteSchema = z.object({
     email: z.string().email(),
     fullName: z.string().min(2),
-    unitNumber: z.string().min(1),
     communityId: z.string().uuid(),
     communitySlug: z.string().min(1),
-    householdId: z.string().optional().nullable(),
+    householdId: z.string().uuid(), // Required now
 })
 
 export async function inviteResident(formData: FormData) {
@@ -23,13 +22,28 @@ export async function inviteResident(formData: FormData) {
         return { error: 'Unauthorized' }
     }
 
+    const householdId = formData.get('householdId') as string | null
+
+    // Check if household exists and get its unit name for fallback
+    let unitNumber = ''
+    if (householdId) {
+        const { data: household } = await supabase
+            .from('households')
+            .select('name')
+            .eq('id', householdId)
+            .single()
+
+        if (household) {
+            unitNumber = household.name
+        }
+    }
+
     const rawData = {
         email: formData.get('email'),
         fullName: formData.get('fullName'),
-        unitNumber: formData.get('unitNumber'),
         communityId: formData.get('communityId'),
         communitySlug: formData.get('communitySlug'),
-        householdId: formData.get('householdId') || null,
+        householdId: formData.get('householdId') as string | null,
     }
 
     const validation = inviteSchema.safeParse(rawData)
@@ -38,8 +52,8 @@ export async function inviteResident(formData: FormData) {
         return { error: validation.error.issues[0].message }
     }
 
-    const { email, fullName, unitNumber, communityId, communitySlug, householdId } = validation.data
-    console.log('Inviting resident:', { email, communityId, householdId });
+    const { email, fullName, communityId, communitySlug } = validation.data
+    // householdId is validated by schema, but we use the formData one for simplicity in previous logic, actually we should use validation.data.householdId
 
     // Check permissions
     const { data: member } = await supabase
@@ -62,7 +76,13 @@ export async function inviteResident(formData: FormData) {
         return { error: 'Unauthorized: Only managers can invite residents' }
     }
 
+    return await inviteResidentCore(email, fullName, communityId, communitySlug, validation.data.householdId, unitNumber)
+}
+
+// Core function to reuse for Bulk Invite
+async function inviteResidentCore(email: string, fullName: string, communityId: string, communitySlug: string, householdId: string, unitNumber: string) {
     const supabaseAdmin = await createAdminClient()
+    const supabase = await createClient() // Need client for session checks if used, but admin is fine for invites
 
     // 2. Check if user already exists
     const { data: existingProfile } = await supabaseAdmin
@@ -78,8 +98,6 @@ export async function inviteResident(formData: FormData) {
     } else {
         console.log(`Inviting new user ${email} to community ${communityId}`)
 
-        // Use auth/confirm for handling both code and hash fragments (implicit flow)
-        // Redirect to /update-password so they can set their password
         const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
 
         const { data: inviteResult, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
@@ -92,7 +110,7 @@ export async function inviteResident(formData: FormData) {
         if (inviteError) {
             console.error('Invite Error:', inviteError)
             if ((inviteError as any).code === 'email_address_invalid' || inviteError.status === 400) {
-                console.log('Attempting fallback with generateLink...');
+                // Fallback logic
                 const { data: linkResult, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
                     type: 'invite',
                     email: email,
@@ -103,11 +121,8 @@ export async function inviteResident(formData: FormData) {
                 })
 
                 if (linkError) {
-                    console.error('Fallback Link Error:', linkError)
                     return { error: 'Failed to send invitation: ' + inviteError?.message }
                 }
-
-                console.log('Fallback Invite Link Generated:', linkResult.properties?.action_link)
                 targetUserId = linkResult.user?.id || null
             } else {
                 return { error: 'Failed to send invitation: ' + inviteError?.message }
@@ -151,8 +166,8 @@ export async function inviteResident(formData: FormData) {
             role: 'resident',
             unit_number: unitNumber,
             status: 'approved',
-            is_household_head: !householdId, // If household selected, they are not head by default? Or logic varies. Let's assume false if household.
-            household_id: householdId || null
+            is_household_head: false, // Default false, invited to household
+            household_id: householdId
         })
 
     if (memberError) {
@@ -162,6 +177,78 @@ export async function inviteResident(formData: FormData) {
 
     revalidatePath(`/communities/${communitySlug}/manager`)
     return { success: true }
+}
+
+export async function bulkInviteResidents(formData: FormData) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Unauthorized' }
+
+    const communityId = formData.get('communityId') as string
+    const communitySlug = formData.get('communitySlug') as string
+    const file = formData.get('file') as File
+
+    if (!file || !communityId) return { error: 'Missing file or community ID' }
+
+    // Parse CSV
+    const text = await file.text()
+    const lines = text.split('\n').filter(line => line.trim() !== '')
+    const headers = lines[0].split(',').map(h => h.trim())
+
+    // Quick validation of headers
+    if (!headers.includes('email') || !headers.includes('household_name')) {
+        return { error: 'CSV must contain "email" and "household_name" columns' }
+    }
+
+    // Fetch all households for mapping
+    const { data: households } = await supabase
+        .from('households')
+        .select('id, name')
+        .eq('community_id', communityId)
+
+    if (!households) return { error: 'No households found in community' }
+
+    const householdMap = new Map(households.map(h => [h.name.trim().toLowerCase(), h.id]))
+
+    const result = {
+        count: 0,
+        errors: [] as string[]
+    }
+
+    // Prepare batch (for now doing sequential to reuse inviteResidentCore, could optimize later)
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim())
+        const row: Record<string, string> = {}
+        headers.forEach((h, index) => {
+            row[h] = values[index] ?? ''
+        })
+
+        const email = row['email']
+        const fullName = row['full_name'] || email.split('@')[0]
+        const householdName = row['household_name']
+
+        if (!email || !householdName) {
+            result.errors.push(`Row ${i + 1}: Missing email or household name`)
+            continue
+        }
+
+        // Map household
+        const householdId = householdMap.get(householdName.toLowerCase())
+        if (!householdId) {
+            result.errors.push(`Row ${i + 1}: Household "${householdName}" not found`)
+            continue
+        }
+
+        const inviteRes = await inviteResidentCore(email, fullName, communityId, communitySlug, householdId, householdName)
+        if (inviteRes.error) {
+            result.errors.push(`Row ${i + 1} (${email}): ${inviteRes.error}`)
+        } else {
+            result.count++
+        }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/manager`)
+    return result
 }
 
 export async function removeResident(formData: FormData) {

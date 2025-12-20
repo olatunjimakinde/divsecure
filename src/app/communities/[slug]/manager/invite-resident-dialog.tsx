@@ -18,12 +18,21 @@ import { inviteResident } from '@/app/communities/people/actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+
 interface InviteResidentDialogProps {
     communityId: string
     communitySlug: string
+    households: { id: string; name: string }[]
 }
 
-export function InviteResidentDialog({ communityId, communitySlug }: InviteResidentDialogProps) {
+export function InviteResidentDialog({ communityId, communitySlug, households }: InviteResidentDialogProps) {
     const [open, setOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
@@ -35,6 +44,7 @@ export function InviteResidentDialog({ communityId, communitySlug }: InviteResid
         const formData = new FormData(event.currentTarget)
         formData.append('communityId', communityId)
         formData.append('communitySlug', communitySlug)
+        // householdId is present in form if selected (Select name="householdId")
 
         try {
             const result = await inviteResident(formData)
@@ -65,7 +75,7 @@ export function InviteResidentDialog({ communityId, communitySlug }: InviteResid
                 <DialogHeader>
                     <DialogTitle>Invite Resident</DialogTitle>
                     <DialogDescription>
-                        Send an invitation to a new resident. They will receive an email to join the community.
+                        Send an invitation to a new resident. They will receive an email to set their password.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={onSubmit}>
@@ -89,6 +99,29 @@ export function InviteResidentDialog({ communityId, communitySlug }: InviteResid
                                 required
                             />
                         </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="householdId">
+                                Household (Optional)
+                            </Label>
+                            <Select name="householdId">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a household..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {households.map((h) => (
+                                        <SelectItem key={h.id} value={h.id}>
+                                            {h.name}
+                                        </SelectItem>
+                                    ))}
+                                    <SelectItem value="none">None (Unassigned)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-[10px] text-muted-foreground">
+                                Assigning to a household will automatically group them.
+                            </p>
+                        </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="unitNumber">Unit Number</Label>
                             <Input

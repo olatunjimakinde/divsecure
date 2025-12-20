@@ -11,6 +11,7 @@ const inviteSchema = z.object({
     unitNumber: z.string().min(1),
     communityId: z.string().uuid(),
     communitySlug: z.string().min(1),
+    householdId: z.string().optional().nullable(),
 })
 
 export async function inviteResident(formData: FormData) {
@@ -28,6 +29,7 @@ export async function inviteResident(formData: FormData) {
         unitNumber: formData.get('unitNumber'),
         communityId: formData.get('communityId'),
         communitySlug: formData.get('communitySlug'),
+        householdId: formData.get('householdId') || null,
     }
 
     const validation = inviteSchema.safeParse(rawData)
@@ -36,8 +38,8 @@ export async function inviteResident(formData: FormData) {
         return { error: validation.error.issues[0].message }
     }
 
-    const { email, fullName, unitNumber, communityId, communitySlug } = validation.data
-    console.log('Inviting resident:', { email, communityId });
+    const { email, fullName, unitNumber, communityId, communitySlug, householdId } = validation.data
+    console.log('Inviting resident:', { email, communityId, householdId });
 
     // Check permissions
     const { data: member } = await supabase
@@ -63,8 +65,6 @@ export async function inviteResident(formData: FormData) {
     const supabaseAdmin = await createAdminClient()
 
     // 2. Check if user already exists
-    // We can check by trying to get the user by email via admin API or checking profiles
-    // It's safer to check profiles as auth.users is restricted
     const { data: existingProfile } = await supabaseAdmin
         .from('profiles')
         .select('id, email')
@@ -74,27 +74,23 @@ export async function inviteResident(formData: FormData) {
     let targetUserId: string | null | undefined = existingProfile?.id
 
     if (targetUserId) {
-        // User exists, add them as member
         console.log(`Adding existing user ${targetUserId} to community ${communityId}`)
     } else {
-        // User does not exist, invite them
         console.log(`Inviting new user ${email} to community ${communityId}`)
 
-        // ...
-
-        let inviteData: any = null;
-        // targetUserId is already declared in outer scope
+        // Use auth/confirm for handling both code and hash fragments (implicit flow)
+        // Redirect to /update-password so they can set their password
+        const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
 
         const { data: inviteResult, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
             data: {
                 full_name: fullName,
             },
-            redirectTo: `${getURL()}auth/callback?next=${encodeURIComponent('/communities/' + communitySlug)}`
+            redirectTo
         })
 
         if (inviteError) {
             console.error('Invite Error:', inviteError)
-            // Fallback for environments where invalid email error occurs (e.g. local/testing)
             if ((inviteError as any).code === 'email_address_invalid' || inviteError.status === 400) {
                 console.log('Attempting fallback with generateLink...');
                 const { data: linkResult, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
@@ -102,7 +98,7 @@ export async function inviteResident(formData: FormData) {
                     email: email,
                     options: {
                         data: { full_name: fullName },
-                        redirectTo: `${getURL()}auth/callback?next=${encodeURIComponent('/communities/' + communitySlug)}`
+                        redirectTo
                     }
                 })
 
@@ -111,20 +107,15 @@ export async function inviteResident(formData: FormData) {
                     return { error: 'Failed to send invitation: ' + inviteError?.message }
                 }
 
-                // Log likely in dev
                 console.log('Fallback Invite Link Generated:', linkResult.properties?.action_link)
-
-                inviteData = linkResult
                 targetUserId = linkResult.user?.id || null
             } else {
                 return { error: 'Failed to send invitation: ' + inviteError?.message }
             }
         } else {
-            inviteData = inviteResult
             targetUserId = inviteResult.user.id
         }
 
-        // Upsert profile for the new user ensuring name is set
         if (targetUserId) {
             await supabaseAdmin.from('profiles').upsert({
                 id: targetUserId,
@@ -159,8 +150,9 @@ export async function inviteResident(formData: FormData) {
             user_id: targetUserId,
             role: 'resident',
             unit_number: unitNumber,
-            status: 'approved', // Auto-approve invited residents
-            is_household_head: true // Default to head, they can change later
+            status: 'approved',
+            is_household_head: !householdId, // If household selected, they are not head by default? Or logic varies. Let's assume false if household.
+            household_id: householdId || null
         })
 
     if (memberError) {
@@ -168,7 +160,7 @@ export async function inviteResident(formData: FormData) {
         return { error: 'Failed to add member to community' }
     }
 
-    revalidatePath(`/communities/${communitySlug}/people`)
+    revalidatePath(`/communities/${communitySlug}/manager`)
     return { success: true }
 }
 
@@ -244,6 +236,6 @@ export async function removeResident(formData: FormData) {
         return { error: 'Failed to remove resident' }
     }
 
-    revalidatePath(`/communities/${communitySlug}/people`)
+    revalidatePath(`/communities/${communitySlug}/manager`)
     return { success: true }
 }

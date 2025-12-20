@@ -164,7 +164,7 @@ export default async function ManagerDashboardPage({
                                     Manage resident access and approvals.
                                 </CardDescription>
                             </div>
-                            <InviteResidentDialog communityId={community.id} communitySlug={slug} />
+                            <InviteResidentDialog communityId={community.id} communitySlug={slug} households={households || []} />
                         </CardHeader>
                         <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                             <ResidentsList communityId={community.id} communitySlug={slug} searchQuery={query} />

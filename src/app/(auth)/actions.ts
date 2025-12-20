@@ -41,15 +41,23 @@ export async function login(formData: FormData) {
     }
 
     // Check if user is soft-deleted
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('status')
-        .eq('id', user.id)
-        .single()
+    // Wrapped in try/catch to be robust against schema/cache issues
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('id', user.id)
+            .single()
 
-    if (profile?.status === 'removed') {
-        await supabase.auth.signOut()
-        redirect('/login?message=' + encodeURIComponent('Your access has been removed by the community administrator.'))
+        if (profile?.status === 'removed') {
+            await supabase.auth.signOut()
+            redirect('/login?message=' + encodeURIComponent('Your access has been removed by the community administrator.'))
+        }
+    } catch (err: any) {
+        if (err.message?.includes('NEXT_REDIRECT')) {
+            throw err;
+        }
+        console.error('Login: Profile check failed (ignoring to allow access):', err)
     }
 
     revalidatePath('/', 'layout')

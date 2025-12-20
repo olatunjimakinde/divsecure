@@ -73,7 +73,7 @@ export function GuardList({ communityId, communitySlug, guards }: GuardListProps
 
                                             {/* Suspend/Activate */}
                                             <form action={async (formData) => {
-                                                await toggleGuardStatus(formData)
+                                                await toggleGuardStatus(null, formData)
                                             }}>
                                                 <input type="hidden" name="memberId" value={guard.id} />
                                                 <input type="hidden" name="communitySlug" value={communitySlug} />

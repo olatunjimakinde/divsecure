@@ -26,7 +26,7 @@ export function DeleteGuardButton({ memberId, communitySlug }: DeleteGuardButton
                 const formData = new FormData()
                 formData.append('memberId', memberId)
                 formData.append('communitySlug', communitySlug)
-                await deleteGuard(formData)
+                await deleteGuard(null, formData)
             }}
         />
     )

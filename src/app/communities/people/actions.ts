@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getURL } from '@/lib/utils'
+import { sendInvitationEmail } from '@/lib/email'
 
 const inviteSchema = z.object({
     email: z.string().email(),
@@ -100,35 +101,33 @@ async function inviteResidentCore(email: string, fullName: string, communityId: 
 
         const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
 
-        const { data: inviteResult, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            data: {
-                full_name: fullName,
-            },
-            redirectTo
+        // Generate Link Manually
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'invite',
+            email: email,
+            options: {
+                data: { full_name: fullName },
+                redirectTo
+            }
         })
 
-        if (inviteError) {
-            console.error('Invite Error:', inviteError)
-            if ((inviteError as any).code === 'email_address_invalid' || inviteError.status === 400) {
-                // Fallback logic
-                const { data: linkResult, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-                    type: 'invite',
-                    email: email,
-                    options: {
-                        data: { full_name: fullName },
-                        redirectTo
-                    }
-                })
+        if (linkError) {
+            console.error('Invite Error:', linkError)
+            return { error: 'Failed to generate invitation link: ' + linkError.message }
+        }
 
-                if (linkError) {
-                    return { error: 'Failed to send invitation: ' + inviteError?.message }
-                }
-                targetUserId = linkResult.user?.id || null
-            } else {
-                return { error: 'Failed to send invitation: ' + inviteError?.message }
-            }
+        if (linkData?.properties?.action_link) {
+            targetUserId = linkData.user.id
+            // Fetch community name for email
+            const { data: community } = await supabaseAdmin
+                .from('communities')
+                .select('name')
+                .eq('id', communityId)
+                .single()
+
+            await sendInvitationEmail(email, linkData.properties.action_link, community?.name)
         } else {
-            targetUserId = inviteResult.user.id
+            return { error: 'Failed to generate invitation link.' }
         }
 
         if (targetUserId) {

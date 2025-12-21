@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { getURL } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { sendInvitationEmail } from '@/lib/email'
 
 export async function createHousehold(formData: FormData) {
     const supabase = await createClient()
@@ -63,15 +64,25 @@ export async function createHousehold(formData: FormData) {
                 const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
                 console.log('Inviting user with redirectTo:', redirectTo)
 
-                const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(contactEmail, {
-                    redirectTo
+                // Generate Link Manually
+                const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+                    type: 'invite',
+                    email: contactEmail,
+                    options: {
+                        redirectTo,
+                    }
                 })
-                if (inviteError) {
-                    console.error('Error inviting user:', inviteError)
-                    // Don't fail the whole request, just log it
-                } else {
-                    userId = inviteData.user.id
+
+                if (linkError) {
+                    console.error('Error generating invite link:', linkError)
+                } else if (linkData?.properties?.action_link) {
+                    userId = linkData.user.id
+                    // Send Email
+                    await sendInvitationEmail(contactEmail, linkData.properties.action_link, communitySlug)
                 }
+
+                // Fallback: If generateLink worked, we continue.
+                // If it failed, userId is null.
             }
 
             if (userId) {
@@ -520,14 +531,33 @@ export async function inviteMemberToHouseholdCore(supabaseAdmin: any, communityI
         const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
         console.log('Inviting user with redirectTo:', redirectTo)
 
-        const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-            redirectTo
+        // Generate Link Manually
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'invite',
+            email: email,
+            options: {
+                redirectTo,
+            }
         })
-        if (inviteError) {
-            console.error('Error inviting user:', inviteError)
-            return { error: 'Failed to invite user. Please check the email address.' }
+
+        if (linkError) {
+            console.error('Error generating invite link:', linkError)
+            return { error: 'Failed to invite user.' }
         }
-        userId = inviteData.user.id
+
+        if (linkData?.properties?.action_link) {
+            userId = linkData.user.id
+            // Fetch community name for email
+            const { data: community } = await supabaseAdmin
+                .from('communities')
+                .select('name')
+                .eq('id', communityId)
+                .single()
+
+            await sendInvitationEmail(email, linkData.properties.action_link, community?.name)
+        } else {
+            return { error: 'Failed to generate invitation link.' }
+        }
     }
 
     // 3. Add/Link to Household

@@ -1,22 +1,24 @@
 
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const FROM_EMAIL = 'Rentra <onboarding@resend.dev>' // Default Resend test email, user should update for prod
 
 export async function sendInvitationEmail(email: string, link: string, communityName?: string) {
   console.log('sendInvitationEmail called with:', { email, link: link.substring(0, 20) + '...', communityName })
 
-  if (!process.env.RESEND_API_KEY) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
     console.error('RESEND_API_KEY is missing. Email not sent.')
     return { error: 'RESEND_API_KEY is missing' }
   } else {
-    console.log('RESEND_API_KEY is present (length: ' + process.env.RESEND_API_KEY.length + ')')
+    console.log('RESEND_API_KEY is present (length: ' + apiKey.length + ')')
   }
 
   try {
     console.log('Sending email via Resend...')
+    // Initialize Resend lazily
+    const resend = new Resend(apiKey)
+
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: email,

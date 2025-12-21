@@ -100,6 +100,7 @@ async function inviteResidentCore(email: string, fullName: string, communityId: 
         console.log(`Inviting new user ${email} to community ${communityId}`)
 
         const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
+        console.log('Checking RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'Present' : 'Missing')
 
         if (process.env.RESEND_API_KEY) {
             // Manual Link Generation + Resend
@@ -137,7 +138,7 @@ async function inviteResidentCore(email: string, fullName: string, communityId: 
             }
         } else {
             // Fallback to Supabase Invite
-            console.log('RESEND_API_KEY missing, falling back to Supabase invite.')
+            console.log('RESEND_API_KEY missing (Fallback branch entered). calling inviteUserByEmail for:', email)
             const { data: inviteResult, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
                 data: {
                     full_name: fullName,
@@ -151,6 +152,7 @@ async function inviteResidentCore(email: string, fullName: string, communityId: 
                 // but usually if env is missing we just rely on Supabase.
                 return { error: 'Failed to send invitation: ' + inviteError?.message }
             } else {
+                console.log('Supabase invite sent successfully. User ID:', inviteResult.user.id)
                 targetUserId = inviteResult.user.id
             }
         }

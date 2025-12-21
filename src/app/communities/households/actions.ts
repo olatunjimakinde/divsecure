@@ -63,6 +63,7 @@ export async function createHousehold(formData: FormData) {
                 // Invite User
                 const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
                 console.log('Inviting user with redirectTo:', redirectTo)
+                console.log('Checking RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'Present' : 'Missing')
 
                 if (process.env.RESEND_API_KEY) {
                     // Manual Link Generation + Resend
@@ -88,13 +89,14 @@ export async function createHousehold(formData: FormData) {
                     }
                 } else {
                     // Fallback to Supabase Invite
-                    console.log('RESEND_API_KEY missing, falling back to Supabase invite.')
+                    console.log('RESEND_API_KEY missing (Fallback branch entered). calling inviteUserByEmail for:', contactEmail)
                     const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(contactEmail, {
                         redirectTo
                     })
                     if (inviteError) {
                         console.error('Error inviting user (Supabase):', inviteError)
                     } else {
+                        console.log('Supabase invite sent successfully. User ID:', inviteData.user.id)
                         userId = inviteData.user.id
                     }
                 }

@@ -65,6 +65,7 @@ export async function createHousehold(formData: FormData) {
                 console.log('Inviting user with redirectTo:', redirectTo)
 
                 // Generate Link Manually
+                console.log('Generating link for:', contactEmail)
                 const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
                     type: 'invite',
                     email: contactEmail,
@@ -76,9 +77,12 @@ export async function createHousehold(formData: FormData) {
                 if (linkError) {
                     console.error('Error generating invite link:', linkError)
                 } else if (linkData?.properties?.action_link) {
+                    console.log('Link generated successfully. Link:', linkData.properties.action_link.substring(0, 30) + '...')
                     userId = linkData.user.id
                     // Send Email
+                    console.log('Triggering sendInvitationEmail...')
                     await sendInvitationEmail(contactEmail, linkData.properties.action_link, communitySlug)
+                    console.log('sendInvitationEmail completed.')
                 }
 
                 // Fallback: If generateLink worked, we continue.

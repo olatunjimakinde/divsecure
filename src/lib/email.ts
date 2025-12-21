@@ -6,17 +6,22 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM_EMAIL = 'Rentra <onboarding@resend.dev>' // Default Resend test email, user should update for prod
 
 export async function sendInvitationEmail(email: string, link: string, communityName?: string) {
-    if (!process.env.RESEND_API_KEY) {
-        console.error('RESEND_API_KEY is missing. Email not sent.')
-        return { error: 'RESEND_API_KEY is missing' }
-    }
+  console.log('sendInvitationEmail called with:', { email, link: link.substring(0, 20) + '...', communityName })
 
-    try {
-        const { data, error } = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: email,
-            subject: `Invitation to join ${communityName || 'Community'}`,
-            html: `
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY is missing. Email not sent.')
+    return { error: 'RESEND_API_KEY is missing' }
+  } else {
+    console.log('RESEND_API_KEY is present (length: ' + process.env.RESEND_API_KEY.length + ')')
+  }
+
+  try {
+    console.log('Sending email via Resend...')
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: `Invitation to join ${communityName || 'Community'}`,
+      html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>You have been invited!</h2>
           <p>You have been invited to join <strong>${communityName || 'the community'}</strong> on Rentra.</p>
@@ -28,16 +33,17 @@ export async function sendInvitationEmail(email: string, link: string, community
           <p style="color: #666; font-size: 12px; word-break: break-all;">${link}</p>
         </div>
       `
-        })
+    })
 
-        if (error) {
-            console.error('Resend Error:', error)
-            return { error: error.message }
-        }
-
-        return { success: true, data }
-    } catch (error) {
-        console.error('Email Send Error:', error)
-        return { error: 'Failed to send email' }
+    if (error) {
+      console.error('Resend API Error:', error)
+      return { error: error.message }
     }
+
+    console.log('Resend Success:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Email Send Exception:', error)
+    return { error: 'Failed to send email' }
+  }
 }

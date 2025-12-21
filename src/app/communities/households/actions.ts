@@ -64,25 +64,39 @@ export async function createHousehold(formData: FormData) {
                 const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
                 console.log('Inviting user with redirectTo:', redirectTo)
 
-                // Generate Link Manually
-                console.log('Generating link for:', contactEmail)
-                const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-                    type: 'invite',
-                    email: contactEmail,
-                    options: {
-                        redirectTo,
-                    }
-                })
+                if (process.env.RESEND_API_KEY) {
+                    // Manual Link Generation + Resend
+                    console.log('RESEND_API_KEY found, using Resend for invite.')
+                    console.log('Generating link for:', contactEmail)
+                    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+                        type: 'invite',
+                        email: contactEmail,
+                        options: {
+                            redirectTo,
+                        }
+                    })
 
-                if (linkError) {
-                    console.error('Error generating invite link:', linkError)
-                } else if (linkData?.properties?.action_link) {
-                    console.log('Link generated successfully. Link:', linkData.properties.action_link.substring(0, 30) + '...')
-                    userId = linkData.user.id
-                    // Send Email
-                    console.log('Triggering sendInvitationEmail...')
-                    await sendInvitationEmail(contactEmail, linkData.properties.action_link, communitySlug)
-                    console.log('sendInvitationEmail completed.')
+                    if (linkError) {
+                        console.error('Error generating invite link:', linkError)
+                    } else if (linkData?.properties?.action_link) {
+                        console.log('Link generated successfully. Link:', linkData.properties.action_link.substring(0, 30) + '...')
+                        userId = linkData.user.id
+                        // Send Email
+                        console.log('Triggering sendInvitationEmail...')
+                        await sendInvitationEmail(contactEmail, linkData.properties.action_link, communitySlug)
+                        console.log('sendInvitationEmail completed.')
+                    }
+                } else {
+                    // Fallback to Supabase Invite
+                    console.log('RESEND_API_KEY missing, falling back to Supabase invite.')
+                    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(contactEmail, {
+                        redirectTo
+                    })
+                    if (inviteError) {
+                        console.error('Error inviting user (Supabase):', inviteError)
+                    } else {
+                        userId = inviteData.user.id
+                    }
                 }
 
                 // Fallback: If generateLink worked, we continue.

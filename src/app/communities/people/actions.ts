@@ -101,36 +101,58 @@ async function inviteResidentCore(email: string, fullName: string, communityId: 
 
         const redirectTo = `${getURL()}auth/confirm?next=${encodeURIComponent('/update-password')}`
 
-        // Generate Link Manually
-        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'invite',
-            email: email,
-            options: {
-                data: { full_name: fullName },
-                redirectTo
+        if (process.env.RESEND_API_KEY) {
+            // Manual Link Generation + Resend
+            console.log('RESEND_API_KEY found, using Resend for invite.')
+            // Generate Link Manually
+            const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+                type: 'invite',
+                email: email,
+                options: {
+                    data: { full_name: fullName },
+                    redirectTo
+                }
+            })
+
+            if (linkError) {
+                console.error('Invite Error:', linkError)
+                return { error: 'Failed to generate invitation link: ' + linkError.message }
             }
-        })
 
-        if (linkError) {
-            console.error('Invite Error:', linkError)
-            return { error: 'Failed to generate invitation link: ' + linkError.message }
-        }
+            if (linkData?.properties?.action_link) {
+                console.log('Link generated successfully. Link:', linkData.properties.action_link.substring(0, 30) + '...')
+                targetUserId = linkData.user.id
+                // Fetch community name for email
+                const { data: community } = await supabaseAdmin
+                    .from('communities')
+                    .select('name')
+                    .eq('id', communityId)
+                    .single()
 
-        if (linkData?.properties?.action_link) {
-            console.log('Link generated successfully. Link:', linkData.properties.action_link.substring(0, 30) + '...')
-            targetUserId = linkData.user.id
-            // Fetch community name for email
-            const { data: community } = await supabaseAdmin
-                .from('communities')
-                .select('name')
-                .eq('id', communityId)
-                .single()
-
-            console.log('Triggering sendInvitationEmail...')
-            await sendInvitationEmail(email, linkData.properties.action_link, community?.name)
-            console.log('sendInvitationEmail completed.')
+                console.log('Triggering sendInvitationEmail...')
+                await sendInvitationEmail(email, linkData.properties.action_link, community?.name)
+                console.log('sendInvitationEmail completed.')
+            } else {
+                return { error: 'Failed to generate invitation link.' }
+            }
         } else {
-            return { error: 'Failed to generate invitation link.' }
+            // Fallback to Supabase Invite
+            console.log('RESEND_API_KEY missing, falling back to Supabase invite.')
+            const { data: inviteResult, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+                data: {
+                    full_name: fullName,
+                },
+                redirectTo
+            })
+
+            if (inviteError) {
+                console.error('Invite Error (Supabase):', inviteError)
+                // Try old fallback logic for email_address_invalid if strictly needed, 
+                // but usually if env is missing we just rely on Supabase.
+                return { error: 'Failed to send invitation: ' + inviteError?.message }
+            } else {
+                targetUserId = inviteResult.user.id
+            }
         }
 
         if (targetUserId) {

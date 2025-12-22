@@ -105,3 +105,124 @@ export async function generateBillsFromRecurring(formData: FormData) {
 
     revalidatePath(`/communities/${communitySlug}/manager/billing`)
 }
+
+export async function updateRecurringCharge(formData: FormData) {
+    const supabase = await createClient()
+    const chargeId = formData.get('chargeId') as string
+    const title = formData.get('title') as string
+    const amount = parseFloat(formData.get('amount') as string)
+    const frequency = formData.get('frequency') as 'monthly' | 'quarterly' | 'yearly'
+    const communitySlug = formData.get('communitySlug') as string
+
+    // Get Charge
+    const { data: charge } = await supabase.from('recurring_charges').select('community_id').eq('id', chargeId).single()
+    if (!charge) return { error: 'Charge not found' }
+
+    // Verify Manager
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', charge.community_id)
+        .eq('user_id', user.id)
+        .single()
+
+    if (member?.role !== 'community_manager') return { error: 'Unauthorized' }
+
+    const { error } = await supabase
+        .from('recurring_charges')
+        .update({ title, amount, frequency })
+        .eq('id', chargeId)
+
+    if (error) {
+        console.error('Error updating recurring charge:', error)
+        return { error: 'Failed to update charge' }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/manager/billing`)
+    return { success: true }
+}
+
+export async function deleteRecurringCharge(formData: FormData) {
+    const supabase = await createClient()
+    const chargeId = formData.get('chargeId') as string
+    const communitySlug = formData.get('communitySlug') as string
+
+    // Get Charge
+    const { data: charge } = await supabase.from('recurring_charges').select('community_id').eq('id', chargeId).single()
+    if (!charge) return { error: 'Charge not found' }
+
+    // Verify Manager
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', charge.community_id)
+        .eq('user_id', user.id)
+        .single()
+
+    if (member?.role !== 'community_manager') return { error: 'Unauthorized' }
+
+    const { error } = await supabase
+        .from('recurring_charges')
+        .delete()
+        .eq('id', chargeId)
+
+    if (error) {
+        console.error('Error deleting recurring charge:', error)
+        return { error: 'Failed to delete charge' }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/manager/billing`)
+    return { success: true }
+}
+
+export async function toggleRecurringChargeStatus(formData: FormData) {
+    const supabase = await createClient()
+    const chargeId = formData.get('chargeId') as string
+    const active = formData.get('active') === 'true'
+    const communitySlug = formData.get('communitySlug') as string
+
+    // Get Charge
+    const { data: charge } = await supabase.from('recurring_charges').select('community_id').eq('id', chargeId).single()
+    if (!charge) return { error: 'Charge not found' }
+
+    // Verify Manager
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', charge.community_id)
+        .eq('user_id', user.id)
+        .single()
+
+    if (member?.role !== 'community_manager') return { error: 'Unauthorized' }
+
+    const { error } = await supabase
+        .from('recurring_charges')
+        .update({ active })
+        .eq('id', chargeId)
+
+    if (error) {
+        console.error('Error toggling recurring charge status:', error)
+        return { error: 'Failed to update status' }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/manager/billing`)
+    return { success: true }
+}

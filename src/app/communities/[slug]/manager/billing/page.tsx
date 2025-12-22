@@ -21,9 +21,18 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { createBill } from '../../../billing/actions'
+import { createBill, updateBill, deleteBill } from '../../../billing/actions'
+import { MoreHorizontal, Pencil, Trash, Power, Play, Pause } from 'lucide-react'
 import {
     Select,
     SelectContent,
@@ -94,7 +103,13 @@ export default async function ManagerBillingPage({
 
     // Import actions
     const { updateBillingSettings } = await import('../../../billing/settings-actions')
-    const { createRecurringCharge, generateBillsFromRecurring } = await import('../../../billing/recurring-actions')
+    const {
+        createRecurringCharge,
+        generateBillsFromRecurring,
+        updateRecurringCharge,
+        deleteRecurringCharge,
+        toggleRecurringChargeStatus
+    } = await import('../../../billing/recurring-actions')
 
     return (
         <div className="space-y-6">
@@ -306,17 +321,117 @@ export default async function ManagerBillingPage({
                                                 : 'Never'}
                                         </TableCell>
                                         <TableCell>
-                                            <form action={async (formData) => {
-                                                'use server'
-                                                await generateBillsFromRecurring(formData)
-                                            }}>
-                                                <input type="hidden" name="communityId" value={community.id} />
-                                                <input type="hidden" name="communitySlug" value={slug} />
-                                                <input type="hidden" name="chargeId" value={charge.id} />
-                                                <Button type="submit" size="sm" variant="outline">
-                                                    Generate Bills
-                                                </Button>
-                                            </form>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Open menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <DropdownMenuItem>
+                                                        <form action={async () => {
+                                                            'use server'
+                                                            // We cannot use formData in menuItem directly easily without wrap, 
+                                                            // but actually we can just use the form action approach or Dialog.
+                                                            // For simplicity, let's keep "Generate Bills" as a main action or special item.
+                                                        }}>
+                                                            {/* Placeholder */}
+                                                        </form>
+                                                    </DropdownMenuItem>
+
+                                                    <form action={async (formData) => {
+                                                        'use server'
+                                                        await generateBillsFromRecurring(formData)
+                                                    }}>
+                                                        <input type="hidden" name="communityId" value={community.id} />
+                                                        <input type="hidden" name="communitySlug" value={slug} />
+                                                        <input type="hidden" name="chargeId" value={charge.id} />
+                                                        <DropdownMenuItem asChild>
+                                                            <button className="w-full flex items-center cursor-pointer">
+                                                                <Play className="mr-2 h-4 w-4" /> Generate Bill
+                                                            </button>
+                                                        </DropdownMenuItem>
+                                                    </form>
+
+                                                    <form action={async (formData) => {
+                                                        'use server'
+                                                        await toggleRecurringChargeStatus(formData)
+                                                    }}>
+                                                        <input type="hidden" name="chargeId" value={charge.id} />
+                                                        <input type="hidden" name="communitySlug" value={slug} />
+                                                        <input type="hidden" name="active" value={(!charge.active).toString()} />
+                                                        <DropdownMenuItem asChild>
+                                                            <button className="w-full flex items-center cursor-pointer">
+                                                                {charge.active ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
+                                                                {charge.active ? 'Suspend' : 'Activate'}
+                                                            </button>
+                                                        </DropdownMenuItem>
+                                                    </form>
+
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
+                                                                <Pencil className="mr-2 h-4 w-4" /> Edit
+                                                            </DropdownMenuItem>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Edit Recurring Charge</DialogTitle>
+                                                            </DialogHeader>
+                                                            <form action={async (formData) => {
+                                                                'use server'
+                                                                await updateRecurringCharge(formData)
+                                                            }}>
+                                                                <input type="hidden" name="chargeId" value={charge.id} />
+                                                                <input type="hidden" name="communitySlug" value={slug} />
+                                                                <div className="grid gap-4 py-4">
+                                                                    <div className="grid gap-2">
+                                                                        <Label>Title</Label>
+                                                                        <Input name="title" defaultValue={charge.title} required />
+                                                                    </div>
+                                                                    <div className="grid gap-2">
+                                                                        <Label>Amount</Label>
+                                                                        <Input name="amount" type="number" step="0.01" defaultValue={charge.amount} required />
+                                                                    </div>
+                                                                    <div className="grid gap-2">
+                                                                        <Label>Frequency</Label>
+                                                                        <Select name="frequency" defaultValue={charge.frequency} required>
+                                                                            <SelectTrigger>
+                                                                                <SelectValue />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                <SelectItem value="monthly">Monthly</SelectItem>
+                                                                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                                                                <SelectItem value="yearly">Yearly</SelectItem>
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                </div>
+                                                                <DialogFooter>
+                                                                    <Button type="submit">Save Changes</Button>
+                                                                </DialogFooter>
+                                                            </form>
+                                                        </DialogContent>
+                                                    </Dialog>
+
+                                                    <DropdownMenuSeparator />
+
+                                                    <form action={async (formData) => {
+                                                        'use server'
+                                                        await deleteRecurringCharge(formData)
+                                                    }}>
+                                                        <input type="hidden" name="chargeId" value={charge.id} />
+                                                        <input type="hidden" name="communitySlug" value={slug} />
+                                                        <DropdownMenuItem asChild>
+                                                            <button className="w-full flex items-center text-red-600 cursor-pointer">
+                                                                <Trash className="mr-2 h-4 w-4" /> Delete
+                                                            </button>
+                                                        </DropdownMenuItem>
+                                                    </form>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -369,7 +484,68 @@ export default async function ManagerBillingPage({
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {new Date(bill.due_date).toLocaleDateString()}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                        <span className="sr-only">Open menu</span>
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
+                                                                <Pencil className="mr-2 h-4 w-4" /> Edit
+                                                            </DropdownMenuItem>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Edit Bill</DialogTitle>
+                                                            </DialogHeader>
+                                                            <form action={async (formData) => {
+                                                                'use server'
+                                                                await updateBill(formData)
+                                                            }}>
+                                                                <input type="hidden" name="billId" value={bill.id} />
+                                                                <input type="hidden" name="communitySlug" value={slug} />
+                                                                <div className="grid gap-4 py-4">
+                                                                    <div className="grid gap-2">
+                                                                        <Label>Title</Label>
+                                                                        <Input name="title" defaultValue={bill.title} required />
+                                                                    </div>
+                                                                    <div className="grid gap-2">
+                                                                        <Label>Amount</Label>
+                                                                        <Input name="amount" type="number" step="0.01" defaultValue={bill.amount} required />
+                                                                    </div>
+                                                                    <div className="grid gap-2">
+                                                                        <Label>Due Date</Label>
+                                                                        <Input name="dueDate" type="date" defaultValue={bill.due_date.split('T')[0]} required />
+                                                                    </div>
+                                                                </div>
+                                                                <DialogFooter>
+                                                                    <Button type="submit">Save Changes</Button>
+                                                                </DialogFooter>
+                                                            </form>
+                                                        </DialogContent>
+                                                    </Dialog>
+
+                                                    <DropdownMenuSeparator />
+
+                                                    <form action={async (formData) => {
+                                                        'use server'
+                                                        await deleteBill(formData)
+                                                    }}>
+                                                        <input type="hidden" name="billId" value={bill.id} />
+                                                        <input type="hidden" name="communitySlug" value={slug} />
+                                                        <DropdownMenuItem asChild>
+                                                            <button className="w-full flex items-center text-red-600 cursor-pointer">
+                                                                <Trash className="mr-2 h-4 w-4" /> Delete
+                                                            </button>
+                                                        </DropdownMenuItem>
+                                                    </form>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}

@@ -107,3 +107,102 @@ export async function payBill(formData: FormData) {
     revalidatePath(`/communities/${communitySlug}/household/billing`)
     return { success: true }
 }
+
+export async function deleteBill(formData: FormData) {
+    const supabase = await createClient()
+    const billId = formData.get('billId') as string
+    const communitySlug = formData.get('communitySlug') as string
+
+    // Get Bill to check community permissions
+    const { data: bill } = await supabase
+        .from('bills')
+        .select('community_id')
+        .eq('id', billId)
+        .single()
+
+    if (!bill) return { error: 'Bill not found' }
+
+    // Verify Manager
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', bill.community_id)
+        .eq('user_id', user.id)
+        .single()
+
+    if (member?.role !== 'community_manager') {
+        return { error: 'Unauthorized' }
+    }
+
+    const { error } = await supabase
+        .from('bills')
+        .delete()
+        .eq('id', billId)
+
+    if (error) {
+        console.error('Error deleting bill:', error)
+        return { error: 'Failed to delete bill' }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/manager/billing`)
+    return { success: true }
+}
+
+export async function updateBill(formData: FormData) {
+    const supabase = await createClient()
+    const billId = formData.get('billId') as string
+    const title = formData.get('title') as string
+    const amount = parseFloat(formData.get('amount') as string)
+    const dueDate = formData.get('dueDate') as string
+    const communitySlug = formData.get('communitySlug') as string
+
+    // Get Bill
+    const { data: bill } = await supabase
+        .from('bills')
+        .select('community_id')
+        .eq('id', billId)
+        .single()
+
+    if (!bill) return { error: 'Bill not found' }
+
+    // Verify Manager
+    const {
+        data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { error: 'Unauthorized' }
+
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', bill.community_id)
+        .eq('user_id', user.id)
+        .single()
+
+    if (member?.role !== 'community_manager') {
+        return { error: 'Unauthorized' }
+    }
+
+    const { error } = await supabase
+        .from('bills')
+        .update({
+            title,
+            amount,
+            due_date: dueDate
+        })
+        .eq('id', billId)
+
+    if (error) {
+        console.error('Error updating bill:', error)
+        return { error: 'Failed to update bill' }
+    }
+
+    revalidatePath(`/communities/${communitySlug}/manager/billing`)
+    return { success: true }
+}

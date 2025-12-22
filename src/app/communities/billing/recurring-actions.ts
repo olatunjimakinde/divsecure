@@ -29,7 +29,8 @@ export async function createRecurringCharge(formData: FormData) {
 
     if (error) {
         console.error('Error creating recurring charge:', error)
-        throw new Error('Failed to create recurring charge')
+        // console.error('Form Data:', { communityId, title, amount, frequency }) // Debug log
+        return { error: 'Failed to create recurring charge: ' + error.message }
     }
 
     revalidatePath(`/communities/${communitySlug}/manager/billing`)

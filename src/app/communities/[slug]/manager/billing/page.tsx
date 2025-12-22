@@ -298,7 +298,7 @@ export default async function ManagerBillingPage({
                                 {recurringCharges?.map((charge) => (
                                     <TableRow key={charge.id}>
                                         <TableCell>{charge.title}</TableCell>
-                                        <TableCell>${charge.amount}</TableCell>
+                                        <TableCell>₦{charge.amount}</TableCell>
                                         <TableCell className="capitalize">{charge.frequency}</TableCell>
                                         <TableCell>
                                             {charge.last_generated_at
@@ -359,7 +359,7 @@ export default async function ManagerBillingPage({
                                         </TableCell>
                                         <TableCell>{bill.households?.name}</TableCell>
                                         <TableCell>{bill.title}</TableCell>
-                                        <TableCell>${bill.amount}</TableCell>
+                                        <TableCell>₦{bill.amount}</TableCell>
                                         <TableCell>
                                             <Badge variant={
                                                 bill.status === 'paid' ? 'default' :

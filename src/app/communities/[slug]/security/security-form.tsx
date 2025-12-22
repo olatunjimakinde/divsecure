@@ -9,7 +9,14 @@ import { useState } from 'react'
 import { CheckCircle, XCircle } from 'lucide-react'
 
 export function SecurityForm({ slug }: { slug: string }) {
-    const [result, setResult] = useState<{ success?: boolean; error?: string; visitorName?: string; message?: string } | null>(null)
+    const [result, setResult] = useState<{
+        success?: boolean;
+        error?: string;
+        visitorName?: string;
+        message?: string;
+        visitorType?: string;
+        vehiclePlate?: string | null;
+    } | null>(null)
     const [code, setCode] = useState('')
 
     async function handleSubmit(formData: FormData) {
@@ -23,7 +30,6 @@ export function SecurityForm({ slug }: { slug: string }) {
 
     return (
         <div className="space-y-6">
-
             <Card>
                 <CardHeader>
                     <CardTitle>Verify Access Code</CardTitle>
@@ -55,17 +61,44 @@ export function SecurityForm({ slug }: { slug: string }) {
                                 ) : (
                                     <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
                                 )}
-                                <div>
-                                    <h3 className="font-semibold">
+                                <div className="space-y-1 w-full">
+                                    <h3 className="font-semibold text-lg">
                                         {result.success ? 'Access Granted' : 'Access Denied'}
                                     </h3>
-                                    <p className="text-sm mt-1">
+
+                                    <p className="text-base font-medium">
                                         {result.message || result.error}
                                     </p>
-                                    {result.visitorName && (
-                                        <p className="text-lg font-bold mt-2">
-                                            Visitor: {result.visitorName}
-                                        </p>
+
+                                    {(result.visitorName || result.visitorType) && (
+                                        <div className="mt-3 pt-3 border-t border-gray-200/50 space-y-2">
+                                            {result.visitorName && (
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm opacity-70">Name:</span>
+                                                    <span className="font-bold">{result.visitorName}</span>
+                                                </div>
+                                            )}
+                                            {result.visitorType && (
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm opacity-70">Type:</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`font-semibold px-2 py-0.5 rounded text-sm ${result.visitorType === 'Visitor' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
+                                                            {result.visitorType}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {result.vehiclePlate && (
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-sm opacity-70">Vehicle:</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="font-mono bg-gray-100 px-2 py-0.5 rounded border border-gray-200 text-gray-800">
+                                                            {result.vehiclePlate}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>

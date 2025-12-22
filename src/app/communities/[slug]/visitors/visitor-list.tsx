@@ -37,6 +37,9 @@ interface VisitorCode {
     vehicle_plate: string | null
     community_id: string
     is_active: boolean
+    max_uses: number | null
+    usage_count: number
+    code_type: string
 }
 
 interface VisitorListProps {
@@ -62,7 +65,14 @@ export function VisitorList({ codes, communitySlug }: VisitorListProps) {
 
     const getStatus = (code: VisitorCode) => {
         if (code.is_active === false) return { label: 'Suspended', variant: 'destructive' as const }
-        if (code.used_at) return { label: 'Used', variant: 'secondary' as const }
+
+        // One-time code used
+        if (code.used_at && code.is_one_time) return { label: 'Used', variant: 'secondary' as const }
+
+        // Max uses exhausted
+        if (!code.is_one_time && code.max_uses && code.usage_count >= code.max_uses) {
+            return { label: 'Exhausted', variant: 'secondary' as const }
+        }
 
         const now = new Date()
         const validUntil = new Date(code.valid_until)
@@ -101,8 +111,10 @@ export function VisitorList({ codes, communitySlug }: VisitorListProps) {
                 <TableBody>
                     {codes.map((code) => {
                         const status = getStatus(code)
+                        const showUsage = !code.is_one_time && code.max_uses
+
                         return (
-                            <TableRow key={code.id} className={status.label === 'Expired' || status.label === 'Used' ? 'bg-muted/30' : ''}>
+                            <TableRow key={code.id} className={status.label === 'Expired' || status.label === 'Used' || status.label === 'Exhausted' ? 'bg-muted/30' : ''}>
                                 <TableCell>
                                     <div className="flex items-center gap-2">
                                         <span className={`font-mono font-bold text-lg px-2 py-1 rounded ${status.label === 'Suspended' ? 'bg-destructive/10 text-destructive line-through' : 'bg-muted'}`}>
@@ -125,7 +137,14 @@ export function VisitorList({ codes, communitySlug }: VisitorListProps) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex flex-col">
-                                        <span className="font-medium">{code.visitor_name}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">{code.visitor_name}</span>
+                                            {code.code_type !== 'visitor' && (
+                                                <Badge variant="outline" className="text-[10px] h-5 px-1 py-0">
+                                                    {code.code_type === 'service_provider' ? 'Service' : 'Staff'}
+                                                </Badge>
+                                            )}
+                                        </div>
                                         {code.vehicle_plate && (
                                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                                                 🚗 {code.vehicle_plate}
@@ -140,9 +159,16 @@ export function VisitorList({ codes, communitySlug }: VisitorListProps) {
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    <Badge variant={status.variant} className="capitalize">
-                                        {status.label}
-                                    </Badge>
+                                    <div className="flex flex-col gap-1 items-start">
+                                        <Badge variant={status.variant} className="capitalize">
+                                            {status.label}
+                                        </Badge>
+                                        {showUsage && (
+                                            <span className="text-xs text-muted-foreground">
+                                                {code.usage_count} / {code.max_uses} uses
+                                            </span>
+                                        )}
+                                    </div>
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu>

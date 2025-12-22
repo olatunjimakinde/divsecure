@@ -454,23 +454,27 @@ export async function verifyVisitorCode(formData: FormData) {
             return {
                 success: true,
                 visitorName: code.visitor_name,
+                visitorType: codeData.code_type === 'service_provider' ? 'Service Provider' : 'Staff',
+                vehiclePlate: code.vehicle_plate,
                 message: `Clocked OUT at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
             }
-        } else {
-            // CLOCK IN (Fall through to standard entry logic, but customized message)
-            // We can just proceed to Entry Logic below, but we need to ensure we don't double-count usage if we don't want to.
-            // Usually, "Usage" for staff = "Entry". So standard logic applies.
         }
     }
 
     // Standard Entry Logic (Visitor OR Staff Clock In)
+
+    // Check One-Time Code reused after clock out or used
     if (code.is_one_time && code.used_at) {
+        // If code type is service provider, specific message requested
+        if (codeData.code_type === 'service_provider' || codeData.code_type === 'staff') {
+            return { error: 'User has already clocked out. Code cannot be reused.', success: false, visitorName: code.visitor_name }
+        }
         return { error: 'One-time code already used', success: false, visitorName: code.visitor_name }
     }
 
     // Check Usage Limits (Strict check before Entry)
     if (!code.is_one_time && codeData.max_uses && (codeData.usage_count || 0) >= codeData.max_uses) {
-        return { error: 'Usage limit exhausted', success: false, visitorName: code.visitor_name }
+        return { error: 'Usage limit exhausted. Access Denied.', success: false, visitorName: code.visitor_name }
     }
 
     // Log Entry
@@ -533,6 +537,8 @@ export async function verifyVisitorCode(formData: FormData) {
     return {
         success: true,
         visitorName: code.visitor_name,
+        visitorType: isStaff ? (codeData.code_type === 'service_provider' ? 'Service Provider' : 'Staff') : 'Visitor',
+        vehiclePlate: code.vehicle_plate,
         message: isStaff
             ? `Clocked IN at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${useMsg}`
             : `Entry Authorized${useMsg}`

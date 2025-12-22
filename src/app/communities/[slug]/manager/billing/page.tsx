@@ -32,7 +32,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createBill, updateBill, deleteBill } from '../../../billing/actions'
-import { MoreHorizontal, Pencil, Trash, Power, Play, Pause } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash, Power, PlayCircle, PauseCircle } from 'lucide-react'
 import {
     Select,
     SelectContent,
@@ -330,45 +330,36 @@ export default async function ManagerBillingPage({
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem>
-                                                        <form action={async () => {
+                                                    <DropdownMenuItem className="p-0">
+                                                        <form action={async (formData) => {
                                                             'use server'
-                                                            // We cannot use formData in menuItem directly easily without wrap, 
-                                                            // but actually we can just use the form action approach or Dialog.
-                                                            // For simplicity, let's keep "Generate Bills" as a main action or special item.
-                                                        }}>
-                                                            {/* Placeholder */}
+                                                            await generateBillsFromRecurring(formData)
+                                                        }} className="w-full">
+                                                            <input type="hidden" name="communityId" value={community.id} />
+                                                            <input type="hidden" name="communitySlug" value={slug} />
+                                                            <input type="hidden" name="chargeId" value={charge.id} />
+                                                            <button type="submit" className="w-full flex items-center px-2 py-1.5 cursor-pointer">
+                                                                <PlayCircle className="mr-2 h-4 w-4" /> Generate Bill
+                                                            </button>
                                                         </form>
                                                     </DropdownMenuItem>
 
-                                                    <form action={async (formData) => {
-                                                        'use server'
-                                                        await generateBillsFromRecurring(formData)
-                                                    }}>
-                                                        <input type="hidden" name="communityId" value={community.id} />
-                                                        <input type="hidden" name="communitySlug" value={slug} />
-                                                        <input type="hidden" name="chargeId" value={charge.id} />
-                                                        <DropdownMenuItem asChild>
-                                                            <button className="w-full flex items-center cursor-pointer">
-                                                                <Play className="mr-2 h-4 w-4" /> Generate Bill
-                                                            </button>
-                                                        </DropdownMenuItem>
-                                                    </form>
 
-                                                    <form action={async (formData) => {
-                                                        'use server'
-                                                        await toggleRecurringChargeStatus(formData)
-                                                    }}>
-                                                        <input type="hidden" name="chargeId" value={charge.id} />
-                                                        <input type="hidden" name="communitySlug" value={slug} />
-                                                        <input type="hidden" name="active" value={(!charge.active).toString()} />
-                                                        <DropdownMenuItem asChild>
-                                                            <button className="w-full flex items-center cursor-pointer">
-                                                                {charge.active ? <Pause className="mr-2 h-4 w-4" /> : <Play className="mr-2 h-4 w-4" />}
+
+                                                    <DropdownMenuItem className="p-0">
+                                                        <form action={async (formData) => {
+                                                            'use server'
+                                                            await toggleRecurringChargeStatus(formData)
+                                                        }} className="w-full">
+                                                            <input type="hidden" name="chargeId" value={charge.id} />
+                                                            <input type="hidden" name="communitySlug" value={slug} />
+                                                            <input type="hidden" name="active" value={(!charge.active).toString()} />
+                                                            <button type="submit" className="w-full flex items-center px-2 py-1.5 cursor-pointer">
+                                                                {charge.active ? <PauseCircle className="mr-2 h-4 w-4" /> : <PlayCircle className="mr-2 h-4 w-4" />}
                                                                 {charge.active ? 'Suspend' : 'Activate'}
                                                             </button>
-                                                        </DropdownMenuItem>
-                                                    </form>
+                                                        </form>
+                                                    </DropdownMenuItem>
 
                                                     <Dialog>
                                                         <DialogTrigger asChild>
@@ -418,18 +409,18 @@ export default async function ManagerBillingPage({
 
                                                     <DropdownMenuSeparator />
 
-                                                    <form action={async (formData) => {
-                                                        'use server'
-                                                        await deleteRecurringCharge(formData)
-                                                    }}>
-                                                        <input type="hidden" name="chargeId" value={charge.id} />
-                                                        <input type="hidden" name="communitySlug" value={slug} />
-                                                        <DropdownMenuItem asChild>
-                                                            <button className="w-full flex items-center text-red-600 cursor-pointer">
+                                                    <DropdownMenuItem className="p-0">
+                                                        <form action={async (formData) => {
+                                                            'use server'
+                                                            await deleteRecurringCharge(formData)
+                                                        }} className="w-full">
+                                                            <input type="hidden" name="chargeId" value={charge.id} />
+                                                            <input type="hidden" name="communitySlug" value={slug} />
+                                                            <button type="submit" className="w-full flex items-center px-2 py-1.5 text-red-600 cursor-pointer">
                                                                 <Trash className="mr-2 h-4 w-4" /> Delete
                                                             </button>
-                                                        </DropdownMenuItem>
-                                                    </form>
+                                                        </form>
+                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -532,18 +523,18 @@ export default async function ManagerBillingPage({
 
                                                     <DropdownMenuSeparator />
 
-                                                    <form action={async (formData) => {
-                                                        'use server'
-                                                        await deleteBill(formData)
-                                                    }}>
-                                                        <input type="hidden" name="billId" value={bill.id} />
-                                                        <input type="hidden" name="communitySlug" value={slug} />
-                                                        <DropdownMenuItem asChild>
-                                                            <button className="w-full flex items-center text-red-600 cursor-pointer">
+                                                    <DropdownMenuItem className="p-0">
+                                                        <form action={async (formData) => {
+                                                            'use server'
+                                                            await deleteBill(formData)
+                                                        }} className="w-full">
+                                                            <input type="hidden" name="billId" value={bill.id} />
+                                                            <input type="hidden" name="communitySlug" value={slug} />
+                                                            <button type="submit" className="w-full flex items-center px-2 py-1.5 text-red-600 cursor-pointer">
                                                                 <Trash className="mr-2 h-4 w-4" /> Delete
                                                             </button>
-                                                        </DropdownMenuItem>
-                                                    </form>
+                                                        </form>
+                                                    </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>

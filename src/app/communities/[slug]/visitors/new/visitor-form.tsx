@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { createVisitorCode } from '../../../visitors/actions'
 import { Loader2 } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Link from 'next/link'
 
 interface VisitorFormProps {
@@ -32,6 +33,8 @@ export function VisitorForm({ communityId, communitySlug }: VisitorFormProps) {
     const [validUntil, setValidUntil] = useState(toLocalISO(new Date(now.getTime() + 24 * 60 * 60 * 1000)))
 
     const [isOneTime, setIsOneTime] = useState(true)
+
+    const [codeType, setCodeType] = useState('visitor')
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -71,6 +74,32 @@ export function VisitorForm({ communityId, communitySlug }: VisitorFormProps) {
                     <div className="space-y-2">
                         <Label htmlFor="visitorName">Visitor Name</Label>
                         <Input id="visitorName" name="visitorName" placeholder="John Doe" required />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="codeType">Visitor Type</Label>
+                        <Select name="codeType" value={codeType} onValueChange={(val) => {
+                            setCodeType(val)
+                            // Auto-configure for common use cases
+                            if (val === 'service_provider') {
+                                setIsOneTime(false)
+                            } else {
+                                setIsOneTime(true)
+                            }
+                        }}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="visitor">Guest / Visitor</SelectItem>
+                                <SelectItem value="service_provider">Service Provider / Staff (Clock In/Out)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-sm text-muted-foreground">
+                            {codeType === 'service_provider'
+                                ? 'Enables Clock In/Out tracking for staff.'
+                                : 'Standard entry code for guests.'}
+                        </p>
                     </div>
 
                     <div className="space-y-2">

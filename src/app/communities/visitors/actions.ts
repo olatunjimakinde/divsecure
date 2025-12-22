@@ -20,6 +20,7 @@ export async function createVisitorCode(formData: FormData) {
     const communitySlug = formData.get('communitySlug') as string
     const isOneTime = formData.get('isOneTime') === 'on'
     const maxUses = formData.get('maxUses') ? parseInt(formData.get('maxUses') as string) : null
+    const codeType = (formData.get('codeType') as string) || 'visitor'
 
     const {
         data: { user },
@@ -76,6 +77,7 @@ export async function createVisitorCode(formData: FormData) {
         valid_until: new Date(validUntil).toISOString(),
         is_one_time: isOneTime,
         max_uses: maxUses,
+        code_type: codeType,
     } as any)
 
     if (error) {

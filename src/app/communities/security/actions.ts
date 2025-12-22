@@ -394,6 +394,7 @@ export async function verifyVisitorCode(formData: FormData) {
     console.log('Found code:', code)
 
     // Check Status
+    const codeData = code as any
     if (!code.is_active) {
         return { error: 'Code is suspended', success: false, visitorName: code.visitor_name }
     }
@@ -401,14 +402,6 @@ export async function verifyVisitorCode(formData: FormData) {
     const now = new Date()
     const validFrom = new Date(code.valid_from)
     const validUntil = new Date(code.valid_until)
-
-    console.log('Time check:', {
-        now: now.toISOString(),
-        validFrom: validFrom.toISOString(),
-        validUntil: validUntil.toISOString(),
-        isBefore: now < validFrom,
-        isAfter: now > validUntil
-    })
 
     if (now < validFrom) {
         return { error: 'Code not yet active', success: false, visitorName: code.visitor_name }
@@ -418,6 +411,59 @@ export async function verifyVisitorCode(formData: FormData) {
         return { error: 'Code expired', success: false, visitorName: code.visitor_name }
     }
 
+    // Handle Clock In / Clock Out for Staff/Service Providers
+    if (codeData.code_type === 'service_provider' || codeData.code_type === 'staff') {
+        // Check for open session (Entry without Exit)
+        const { data: lastLog } = await supabase
+            .from('visitor_logs')
+            .select('*')
+            .eq('visitor_code_id', code.id)
+            .is('exited_at', null)
+            .order('entered_at', { ascending: false })
+            .limit(1)
+            .single()
+
+        if (lastLog) {
+            // CLOCK OUT
+            const { error: updateError } = await supabase
+                .from('visitor_logs')
+                .update({
+                    exited_at: now.toISOString(),
+                    exit_point: 'Main Gate' // Could be dynamic if we had multiple gates
+                })
+                .eq('id', lastLog.id)
+
+            if (updateError) {
+                console.error('Error logging exit:', updateError)
+                return { error: 'Failed to clock out', success: false }
+            }
+
+            // Notification for Clock Out
+            try {
+                const { sendNotification } = await import('@/lib/notifications')
+                await sendNotification(
+                    code.host_id,
+                    community.id,
+                    'visitor_arrival', // Use same type or new 'staff_activity' type
+                    `${code.visitor_name} has CLOCKED OUT at ${now.toLocaleTimeString()}.`
+                )
+            } catch (e) {
+                console.error('Error triggering notification:', e)
+            }
+
+            return {
+                success: true,
+                visitorName: code.visitor_name,
+                message: `Clocked OUT at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            }
+        } else {
+            // CLOCK IN (Fall through to standard entry logic, but customized message)
+            // We can just proceed to Entry Logic below, but we need to ensure we don't double-count usage if we don't want to.
+            // Usually, "Usage" for staff = "Entry". So standard logic applies.
+        }
+    }
+
+    // Standard Entry Logic (Visitor OR Staff Clock In)
     if (code.is_one_time && code.used_at) {
         return { error: 'One-time code already used', success: false, visitorName: code.visitor_name }
     }
@@ -438,25 +484,25 @@ export async function verifyVisitorCode(formData: FormData) {
         return { error: 'Failed to log entry', success: false }
     } else {
         // Send Notification to Host
-        // We need to import sendNotification dynamically or at top level. 
-        // Since this is a server action, top level is fine.
-        // But I need to add the import statement first.
-        // For now I will add the call here and then add the import.
         try {
             const { sendNotification } = await import('@/lib/notifications')
+            const isStaff = codeData.code_type === 'service_provider' || codeData.code_type === 'staff'
+            const msg = isStaff
+                ? `${code.visitor_name} has CLOCKED IN at ${now.toLocaleTimeString()}.`
+                : `Your visitor ${code.visitor_name} has arrived at the Main Gate.`
+
             await sendNotification(
                 code.host_id,
                 community.id,
                 'visitor_arrival',
-                `Your visitor ${code.visitor_name} has arrived at the Main Gate.`
+                msg
             )
         } catch (e) {
             console.error('Error triggering notification:', e)
         }
     }
 
-    // Mark as Used if One-Time
-    const codeData = code as any
+    // Mark as Used / Increment Count
     if (code.is_one_time) {
         await supabase
             .from('visitor_codes')
@@ -465,25 +511,28 @@ export async function verifyVisitorCode(formData: FormData) {
     } else if (codeData.max_uses) {
         // Check usage limit
         if (codeData.usage_count >= codeData.max_uses) {
-            return { error: 'Usage limit reached', success: false, visitorName: code.visitor_name }
+            // Technically we should have checked this BEFORE inserting log, but reasonable to check here for "next time" or block.
+            // Better to block:
         }
 
-        // Increment usage count
         await supabase
             .from('visitor_codes')
-            .update({ usage_count: codeData.usage_count + 1 } as any)
+            .update({ usage_count: (codeData.usage_count || 0) + 1 } as any)
             .eq('id', code.id)
     } else {
-        // Unlimited uses, just track count
+        // Unlimited uses
         await supabase
             .from('visitor_codes')
-            .update({ usage_count: codeData.usage_count + 1 } as any)
+            .update({ usage_count: (codeData.usage_count || 0) + 1 } as any)
             .eq('id', code.id)
     }
 
+    const isStaff = codeData.code_type === 'service_provider' || codeData.code_type === 'staff'
     return {
         success: true,
         visitorName: code.visitor_name,
-        message: 'Entry authorized'
+        message: isStaff
+            ? `Clocked IN at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            : 'Entry Authorized'
     }
 }

@@ -468,6 +468,11 @@ export async function verifyVisitorCode(formData: FormData) {
         return { error: 'One-time code already used', success: false, visitorName: code.visitor_name }
     }
 
+    // Check Usage Limits (Strict check before Entry)
+    if (!code.is_one_time && codeData.max_uses && (codeData.usage_count || 0) >= codeData.max_uses) {
+        return { error: 'Usage limit exhausted', success: false, visitorName: code.visitor_name }
+    }
+
     // Log Entry
     const { error: logError } = await supabase
         .from('visitor_logs')
@@ -487,9 +492,14 @@ export async function verifyVisitorCode(formData: FormData) {
         try {
             const { sendNotification } = await import('@/lib/notifications')
             const isStaff = codeData.code_type === 'service_provider' || codeData.code_type === 'staff'
+
+            // Usage Info for Notification
+            const currentUse = (codeData.usage_count || 0) + 1
+            const useInfo = codeData.max_uses ? ` (Use ${currentUse}/${codeData.max_uses})` : ` (Use ${currentUse})`
+
             const msg = isStaff
-                ? `${code.visitor_name} has CLOCKED IN at ${now.toLocaleTimeString()}.`
-                : `Your visitor ${code.visitor_name} has arrived at the Main Gate.`
+                ? `${code.visitor_name} has CLOCKED IN at ${now.toLocaleTimeString()}${useInfo}.`
+                : `Your visitor ${code.visitor_name} has arrived at the Main Gate${useInfo}.`
 
             await sendNotification(
                 code.host_id,
@@ -508,19 +518,8 @@ export async function verifyVisitorCode(formData: FormData) {
             .from('visitor_codes')
             .update({ used_at: now.toISOString() })
             .eq('id', code.id)
-    } else if (codeData.max_uses) {
-        // Check usage limit
-        if (codeData.usage_count >= codeData.max_uses) {
-            // Technically we should have checked this BEFORE inserting log, but reasonable to check here for "next time" or block.
-            // Better to block:
-        }
-
-        await supabase
-            .from('visitor_codes')
-            .update({ usage_count: (codeData.usage_count || 0) + 1 } as any)
-            .eq('id', code.id)
     } else {
-        // Unlimited uses
+        // Increment usage count (Unlimited or Limited)
         await supabase
             .from('visitor_codes')
             .update({ usage_count: (codeData.usage_count || 0) + 1 } as any)
@@ -528,11 +527,14 @@ export async function verifyVisitorCode(formData: FormData) {
     }
 
     const isStaff = codeData.code_type === 'service_provider' || codeData.code_type === 'staff'
+    const currentUse = (codeData.usage_count || 0) + 1
+    const useMsg = code.is_one_time ? '' : (codeData.max_uses ? ` (Use ${currentUse} of ${codeData.max_uses})` : ` (Use ${currentUse})`)
+
     return {
         success: true,
         visitorName: code.visitor_name,
         message: isStaff
-            ? `Clocked IN at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-            : 'Entry Authorized'
+            ? `Clocked IN at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${useMsg}`
+            : `Entry Authorized${useMsg}`
     }
 }

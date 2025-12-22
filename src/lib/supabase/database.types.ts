@@ -130,6 +130,9 @@ export interface Database {
                     created_at: string
                     vehicle_plate: string | null
                     is_active: boolean
+                    max_uses: number | null
+                    usage_count: number
+                    code_type: 'visitor' | 'service_provider' | 'staff'
                 }
                 Insert: {
                     id?: string
@@ -144,6 +147,9 @@ export interface Database {
                     created_at?: string
                     vehicle_plate?: string | null
                     is_active?: boolean
+                    max_uses?: number | null
+                    usage_count?: number
+                    code_type?: 'visitor' | 'service_provider' | 'staff'
                 }
                 Update: {
                     id?: string
@@ -158,6 +164,9 @@ export interface Database {
                     created_at?: string
                     vehicle_plate?: string | null
                     is_active?: boolean
+                    max_uses?: number | null
+                    usage_count?: number
+                    code_type?: 'visitor' | 'service_provider' | 'staff'
                 }
                 Relationships: [
                     {

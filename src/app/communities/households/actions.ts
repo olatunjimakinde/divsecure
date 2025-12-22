@@ -80,11 +80,17 @@ export async function createHousehold(formData: FormData) {
                     if (linkError) {
                         console.error('Error generating invite link:', linkError)
                     } else if (linkData?.properties?.action_link) {
-                        console.log('Link generated successfully. Link:', linkData.properties.action_link.substring(0, 30) + '...')
+                        const originalLink = linkData.properties.action_link
+                        // Wrap in safe-redirect to prevent email scanners from consuming the token
+                        const safeLink = `${getURL()}auth/safe-redirect?target=${encodeURIComponent(originalLink)}`
+
+                        console.log('Link generated successfully. Original:', originalLink.substring(0, 30) + '...')
+                        console.log('Sending Safe Link:', safeLink)
+
                         userId = linkData.user.id
                         // Send Email
                         console.log('Triggering sendInvitationEmail...')
-                        await sendInvitationEmail(contactEmail, linkData.properties.action_link, communitySlug)
+                        await sendInvitationEmail(contactEmail, safeLink, communitySlug)
                         console.log('sendInvitationEmail completed.')
                     }
                 } else {

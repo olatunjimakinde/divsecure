@@ -121,7 +121,13 @@ async function inviteResidentCore(email: string, fullName: string, communityId: 
             }
 
             if (linkData?.properties?.action_link) {
-                console.log('Link generated successfully. Link:', linkData.properties.action_link.substring(0, 30) + '...')
+                const originalLink = linkData.properties.action_link
+                // Wrap in safe-redirect to prevent email scanners from consuming the token
+                const safeLink = `${getURL()}auth/safe-redirect?target=${encodeURIComponent(originalLink)}`
+
+                console.log('Link generated successfully. Original:', originalLink.substring(0, 30) + '...')
+                console.log('Sending Safe Link:', safeLink)
+
                 targetUserId = linkData.user.id
                 // Fetch community name for email
                 const { data: community } = await supabaseAdmin
@@ -131,7 +137,7 @@ async function inviteResidentCore(email: string, fullName: string, communityId: 
                     .single()
 
                 console.log('Triggering sendInvitationEmail...')
-                await sendInvitationEmail(email, linkData.properties.action_link, community?.name)
+                await sendInvitationEmail(email, safeLink, community?.name)
                 console.log('sendInvitationEmail completed.')
             } else {
                 return { error: 'Failed to generate invitation link.' }

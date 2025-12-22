@@ -20,6 +20,25 @@ export async function createRecurringCharge(formData: FormData) {
         throw new Error('Unauthorized')
     }
 
+    const { data: memberData, error: memberError } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single()
+
+    console.log('Recurring Charge Debug:', {
+        userId: user.id,
+        communityId,
+        memberRole: memberData?.role,
+        memberError
+    })
+
+    if (memberError || memberData?.role !== 'community_manager') {
+        console.error('Unauthorized: User is not a community manager for this community')
+        return { error: 'Unauthorized: You must be a community manager.' }
+    }
+
     const { error } = await supabase.from('recurring_charges').insert({
         community_id: communityId,
         title,

@@ -467,14 +467,14 @@ export async function verifyVisitorCode(formData: FormData) {
     if (code.is_one_time && code.used_at) {
         // If code type is service provider, specific message requested
         if (codeData.code_type === 'service_provider' || codeData.code_type === 'staff') {
-            return { error: 'User has already clocked out. Code cannot be reused.', success: false, visitorName: code.visitor_name }
+            return { error: 'One-time access code has already been used. Access Denied.', success: false, visitorName: code.visitor_name }
         }
-        return { error: 'One-time code already used', success: false, visitorName: code.visitor_name }
+        return { error: 'One-time access code already used. Access Denied.', success: false, visitorName: code.visitor_name }
     }
 
     // Check Usage Limits (Strict check before Entry)
     if (!code.is_one_time && codeData.max_uses && (codeData.usage_count || 0) >= codeData.max_uses) {
-        return { error: 'Usage limit exhausted. Access Denied.', success: false, visitorName: code.visitor_name }
+        return { error: 'The set number of check-ins and check-outs for this code has been used. Access Denied.', success: false, visitorName: code.visitor_name }
     }
 
     // Log Entry

@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ export default async function AdminLayout({
     children: React.ReactNode
 }) {
     const supabase = await createClient()
+    const supabaseAdmin = await createAdminClient()
 
     const {
         data: { user },
@@ -23,7 +24,7 @@ export default async function AdminLayout({
     }
 
     // Double check admin status (middleware handles it, but good for safety)
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseAdmin
         .from('profiles' as any)
         .select('is_super_admin')
         .eq('id', user.id)

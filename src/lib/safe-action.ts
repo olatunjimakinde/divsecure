@@ -37,7 +37,15 @@ export function safeAction<TInput, TOutput>({
             }
 
             // 2. Input Validation
-            const data = Object.fromEntries(formData.entries())
+            const formDataObj = Object.fromEntries(formData.entries())
+            const data = Object.fromEntries(
+                Object.entries(formDataObj).map(([key, value]) => {
+                    if (value === '' || value === null) {
+                        return [key, undefined]
+                    }
+                    return [key, value]
+                })
+            )
             const validationResult = schema.safeParse(data)
 
             if (!validationResult.success) {

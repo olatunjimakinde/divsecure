@@ -64,7 +64,11 @@ export async function getMaintenanceRequests(communityId: string, isManager: boo
         .order('created_at', { ascending: false });
 
     // If not manager, strictly filter by own ID (redundant with RLS but good for optimization/safety)
-    if (!isManager) {
+    const { isSuperAdmin } = await import('@/lib/permissions');
+    const isSuper = await isSuperAdmin(user.id);
+
+    // If not manager and not super admin, strictly filter by own ID
+    if (!isManager && !isSuper) {
         query = query.eq('reporter_id', user.id);
     }
 
@@ -84,7 +88,16 @@ export async function updateMaintenanceStatus(
     communitySlug: string,
     status: MaintenanceStatus
 ) {
-    const supabase = await createClient();
+    const { isSuperAdmin } = await import('@/lib/permissions');
+    const { createAdminClient } = await import('@/lib/supabase/server');
+
+    const supabaseInitial = await createClient();
+    const { data: { user } } = await supabaseInitial.auth.getUser();
+
+    if (!user) return { error: 'Unauthorized' };
+
+    const isSuper = await isSuperAdmin(user.id);
+    const supabase = isSuper ? await createAdminClient() : supabaseInitial;
 
     // Verify manager permissions implicitly via RLS, but explicit check is better for UX feedback
     const { error } = await supabase

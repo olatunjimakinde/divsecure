@@ -119,7 +119,10 @@ export async function createCommunity(formData: FormData) {
             .eq('owner_id', user.id)
             .neq('id', community.id)
 
-        if (communityCount && communityCount > 0) {
+        const { isSuperAdmin } = await import('@/lib/permissions')
+        const isSuper = await isSuperAdmin(user.id)
+
+        if (!isSuper && communityCount && communityCount > 0) {
             // User already has communities, so this is an additional one.
             // Redirect to subscription page to pay for this specific community.
             // But we already created the community? Ideally we should have checked before creating.

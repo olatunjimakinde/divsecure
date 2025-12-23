@@ -483,15 +483,20 @@ export async function changeHouseholdHead(formData: FormData) {
     }
 
     // Verify Manager (reusing logic or just checking role)
-    const { data: managerMember } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', communityId)
-        .eq('user_id', user.id)
-        .single()
+    const { isSuperAdmin } = await import('@/lib/permissions')
+    const isSuper = await isSuperAdmin(user.id)
 
-    if (managerMember?.role !== 'community_manager') {
-        return { error: 'Unauthorized' }
+    if (!isSuper) {
+        const { data: managerMember } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', communityId)
+            .eq('user_id', user.id)
+            .single()
+
+        if (managerMember?.role !== 'community_manager') {
+            return { error: 'Unauthorized' }
+        }
     }
 
     const result = await changeHouseholdHeadCore(supabaseAdmin, householdId, newHeadMemberId)
@@ -653,15 +658,20 @@ export async function inviteMemberToHousehold(formData: FormData) {
     }
 
     // Verify Manager
-    const { data: managerMember } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', communityId)
-        .eq('user_id', user.id)
-        .single()
+    const { isSuperAdmin } = await import('@/lib/permissions')
+    const isSuper = await isSuperAdmin(user.id)
 
-    if (managerMember?.role !== 'community_manager') {
-        return { error: 'Unauthorized' }
+    if (!isSuper) {
+        const { data: managerMember } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', communityId)
+            .eq('user_id', user.id)
+            .single()
+
+        if (managerMember?.role !== 'community_manager') {
+            return { error: 'Unauthorized' }
+        }
     }
 
     const result = await inviteMemberToHouseholdCore(supabaseAdmin, communityId, householdId, email)

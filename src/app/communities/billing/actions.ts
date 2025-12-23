@@ -23,15 +23,21 @@ export async function createBill(formData: FormData) {
     }
 
     // Verify Manager
-    const { data: member } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', communityId)
-        .eq('user_id', user.id)
-        .single()
+    // Verify Manager
+    const { isSuperAdmin } = await import('@/lib/permissions')
+    const isSuper = await isSuperAdmin(user.id)
 
-    if (member?.role !== 'community_manager') {
-        return { error: 'Unauthorized' }
+    if (!isSuper) {
+        const { data: member } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', communityId)
+            .eq('user_id', user.id)
+            .single()
+
+        if (member?.role !== 'community_manager') {
+            return { error: 'Unauthorized' }
+        }
     }
 
     const { error } = await supabase
@@ -129,15 +135,20 @@ export async function deleteBill(formData: FormData) {
 
     if (!user) return { error: 'Unauthorized' }
 
-    const { data: member } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', bill.community_id)
-        .eq('user_id', user.id)
-        .single()
+    const { isSuperAdmin } = await import('@/lib/permissions')
+    const isSuper = await isSuperAdmin(user.id)
 
-    if (member?.role !== 'community_manager') {
-        return { error: 'Unauthorized' }
+    if (!isSuper) {
+        const { data: member } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', bill.community_id)
+            .eq('user_id', user.id)
+            .single()
+
+        if (member?.role !== 'community_manager') {
+            return { error: 'Unauthorized' }
+        }
     }
 
     const { error } = await supabase
@@ -178,15 +189,20 @@ export async function updateBill(formData: FormData) {
 
     if (!user) return { error: 'Unauthorized' }
 
-    const { data: member } = await supabase
-        .from('members')
-        .select('role')
-        .eq('community_id', bill.community_id)
-        .eq('user_id', user.id)
-        .single()
+    const { isSuperAdmin } = await import('@/lib/permissions')
+    const isSuper = await isSuperAdmin(user.id)
 
-    if (member?.role !== 'community_manager') {
-        return { error: 'Unauthorized' }
+    if (!isSuper) {
+        const { data: member } = await supabase
+            .from('members')
+            .select('role')
+            .eq('community_id', bill.community_id)
+            .eq('user_id', user.id)
+            .single()
+
+        if (member?.role !== 'community_manager') {
+            return { error: 'Unauthorized' }
+        }
     }
 
     const { error } = await supabase

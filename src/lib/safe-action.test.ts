@@ -57,4 +57,29 @@ describe('safeAction', () => {
         expect(result.success).toBe(true)
         expect(result.data).toEqual({ message: 'Hello John' })
     })
+    it('should handle empty strings as undefined for optional fields', async () => {
+        const schema = z.object({
+            name: z.string().min(3),
+            optionalField: z.string().min(1).optional()
+        })
+
+        const action = safeAction({
+            schema,
+            action: async (data) => {
+                return {
+                    message: `Hello ${data.name}`,
+                    hasOptional: data.optionalField !== undefined
+                }
+            }
+        })
+
+        const formData = new FormData()
+        formData.append('name', 'John')
+        formData.append('optionalField', '') // Should be converted to undefined
+
+        const result = await action(null, formData)
+
+        expect(result.success).toBe(true)
+        expect(result.data?.hasOptional).toBe(false)
+    })
 })

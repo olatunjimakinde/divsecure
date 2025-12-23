@@ -21,15 +21,20 @@ export const createGuard = safeAction({
         const supabase = await createClient() // Need non-admin for normal queries? Or use the user passed by safeAction?
         // safeAction passes the Auth User object. We need to check role.
 
-        const { data: currentUserMember } = await supabase
-            .from('members')
-            .select('role')
-            .eq('community_id', communityId)
-            .eq('user_id', user.id)
-            .single()
+        const { isSuperAdmin } = await import('@/lib/permissions')
+        const isSuper = await isSuperAdmin(user.id)
 
-        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-            throw new Error('Unauthorized')
+        if (!isSuper) {
+            const { data: currentUserMember } = await supabase
+                .from('members')
+                .select('role')
+                .eq('community_id', communityId)
+                .eq('user_id', user.id)
+                .single()
+
+            if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+                throw new Error('Unauthorized')
+            }
         }
 
         // 1.5 Check if Head of Security already exists if creating one
@@ -133,15 +138,20 @@ export const updateGuard = safeAction({
         // Actually, Head Guard might demote themselves accidentally? Let's allow for now as not requested.
 
         const supabase = await createClient()
-        const { data: currentUserMember } = await supabase
-            .from('members')
-            .select('role')
-            .eq('community_id', member.community_id)
-            .eq('user_id', user.id)
-            .single()
+        const { isSuperAdmin } = await import('@/lib/permissions')
+        const isSuper = await isSuperAdmin(user.id)
 
-        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-            throw new Error('Unauthorized')
+        if (!isSuper) {
+            const { data: currentUserMember } = await supabase
+                .from('members')
+                .select('role')
+                .eq('community_id', member.community_id)
+                .eq('user_id', user.id)
+                .single()
+
+            if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+                throw new Error('Unauthorized')
+            }
         }
 
         const { error: profileError } = await supabaseAdmin
@@ -186,15 +196,20 @@ export const toggleGuardStatus = safeAction({
         }
 
         const supabase = await createClient()
-        const { data: currentUserMember } = await supabase
-            .from('members')
-            .select('role')
-            .eq('community_id', member.community_id)
-            .eq('user_id', user.id)
-            .single()
+        const { isSuperAdmin } = await import('@/lib/permissions')
+        const isSuper = await isSuperAdmin(user.id)
 
-        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-            throw new Error('Unauthorized')
+        if (!isSuper) {
+            const { data: currentUserMember } = await supabase
+                .from('members')
+                .select('role')
+                .eq('community_id', member.community_id)
+                .eq('user_id', user.id)
+                .single()
+
+            if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+                throw new Error('Unauthorized')
+            }
         }
 
         const { error } = await supabaseAdmin
@@ -285,15 +300,20 @@ export const deleteGuard = safeAction({
         }
 
         const supabase = await createClient()
-        const { data: currentUserMember } = await supabase
-            .from('members')
-            .select('role')
-            .eq('community_id', member.community_id)
-            .eq('user_id', user.id)
-            .single()
+        const { isSuperAdmin } = await import('@/lib/permissions')
+        const isSuper = await isSuperAdmin(user.id)
 
-        if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
-            throw new Error('Unauthorized')
+        if (!isSuper) {
+            const { data: currentUserMember } = await supabase
+                .from('members')
+                .select('role')
+                .eq('community_id', member.community_id)
+                .eq('user_id', user.id)
+                .single()
+
+            if (!currentUserMember || !['community_manager', 'head_of_security'].includes(currentUserMember.role)) {
+                throw new Error('Unauthorized')
+            }
         }
 
         const { error: deleteMemberError } = await supabaseAdmin

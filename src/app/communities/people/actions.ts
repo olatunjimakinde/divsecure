@@ -64,14 +64,9 @@ export async function inviteResident(formData: FormData) {
         .eq('user_id', user.id)
         .single()
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_super_admin')
-        .eq('id', user.id)
-        .single()
-
     const isManager = member?.role === 'community_manager'
-    const isSuperAdmin = !!profile?.is_super_admin
+    const { isSuperAdmin: checkSuperAdmin } = await import('@/lib/permissions')
+    const isSuperAdmin = await checkSuperAdmin(user.id)
 
     if (!isManager && !isSuperAdmin) {
         return { error: 'Unauthorized: Only managers can invite residents' }
@@ -222,6 +217,22 @@ export async function bulkInviteResidents(formData: FormData) {
 
     if (!file || !communityId) return { error: 'Missing file or community ID' }
 
+    // Check permissions
+    const { data: member } = await supabase
+        .from('members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', user.id)
+        .single()
+
+    const isManager = member?.role === 'community_manager'
+    const { isSuperAdmin } = await import('@/lib/permissions')
+    const isSuper = await isSuperAdmin(user.id)
+
+    if (!isManager && !isSuper) {
+        return { error: 'Unauthorized' }
+    }
+
     // Parse CSV
     const text = await file.text()
     const lines = text.split('\n').filter(line => line.trim() !== '')
@@ -319,14 +330,9 @@ export async function removeResident(formData: FormData) {
         .eq('user_id', user.id)
         .single()
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_super_admin')
-        .eq('id', user.id)
-        .single()
-
     const isManager = managerMember?.role === 'community_manager'
-    const isSuperAdmin = !!profile?.is_super_admin
+    const { isSuperAdmin: checkSuperAdmin } = await import('@/lib/permissions')
+    const isSuperAdmin = await checkSuperAdmin(user.id)
 
     if (!isManager && !isSuperAdmin) {
         return { error: 'Unauthorized' }

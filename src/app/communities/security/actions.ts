@@ -461,7 +461,8 @@ export async function verifyVisitorCode(formData: FormData) {
                 visitorName: code.visitor_name,
                 visitorType: codeData.code_type === 'service_provider' ? 'Service Provider' : 'Staff',
                 vehiclePlate: code.vehicle_plate,
-                message: `Clocked OUT at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                message: 'Clocked OUT',
+                timestamp: now.toISOString(),
             }
         }
     }
@@ -548,8 +549,8 @@ export async function verifyVisitorCode(formData: FormData) {
         visitorName: code.visitor_name,
         visitorType: isStaff ? (codeData.code_type === 'service_provider' ? 'Service Provider' : 'Staff') : 'Visitor',
         vehiclePlate: code.vehicle_plate,
-        message: isStaff
-            ? `Clocked IN at ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${useMsg}`
-            : `Entry Authorized${useMsg}`
+        message: isStaff ? 'Clocked IN' : 'Entry Authorized',
+        usageInfo: useMsg,
+        timestamp: now.toISOString()
     }
 }

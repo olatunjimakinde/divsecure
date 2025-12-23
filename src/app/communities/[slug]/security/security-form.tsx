@@ -14,6 +14,8 @@ export function SecurityForm({ slug }: { slug: string }) {
         error?: string;
         visitorName?: string;
         message?: string;
+        usageInfo?: string;
+        timestamp?: string;
         visitorType?: string;
         vehiclePlate?: string | null;
     } | null>(null)
@@ -26,6 +28,21 @@ export function SecurityForm({ slug }: { slug: string }) {
         if (res?.success) {
             setCode('') // Clear input on success
         }
+    }
+
+    const formatMessage = (res: NonNullable<typeof result>) => {
+        if (!res.timestamp) return res.message || res.error
+
+        const time = new Date(res.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        const usage = res.usageInfo || ''
+
+        // If it's a clock out or clock in, append time
+        if (res.message?.includes('Clocked')) {
+            return `${res.message} at ${time}${usage}`
+        }
+
+        // For standard entry
+        return `${res.message}${usage}`
     }
 
     return (
@@ -67,7 +84,7 @@ export function SecurityForm({ slug }: { slug: string }) {
                                     </h3>
 
                                     <p className="text-base font-medium">
-                                        {result.message || result.error}
+                                        {formatMessage(result)}
                                     </p>
 
                                     {(result.visitorName || result.visitorType) && (

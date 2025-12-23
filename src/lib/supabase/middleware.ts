@@ -60,9 +60,21 @@ export async function updateSession(request: NextRequest) {
 
         // Protect /admin routes
         if (request.nextUrl.pathname.startsWith('/admin') && user) {
-            const { data: profile } = await supabase
+            // Use Service Role for this specific check to bypass RLS
+            const supabaseAdmin = createServerClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL,
+                process.env.SUPABASE_SERVICE_ROLE_KEY!,
+                {
+                    cookies: {
+                        getAll() { return [] },
+                        setAll() { }
+                    }
+                }
+            )
+
+            const { data: profile } = await supabaseAdmin
                 .from('profiles')
-                .select('is_super_admin, status')
+                .select('is_super_admin')
                 .eq('id', user.id)
                 .single()
 

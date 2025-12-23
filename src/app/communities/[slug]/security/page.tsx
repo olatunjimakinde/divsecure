@@ -48,7 +48,10 @@ export default async function GuardSecurityPage({
         .eq('user_id', user.id)
         .single()
 
-    if (!member || !['guard', 'head_of_security', 'community_manager'].includes(member.role)) {
+    const { isSuperAdmin } = await import('@/lib/permissions')
+    const isSuper = await isSuperAdmin(user.id)
+
+    if (!isSuper && (!member || !['guard', 'head_of_security', 'community_manager'].includes(member.role))) {
         return (
             <div className="p-8 text-center">
                 <h1 className="text-2xl font-bold mb-4">Unauthorized</h1>
@@ -59,12 +62,16 @@ export default async function GuardSecurityPage({
         )
     }
 
-    // Get Shifts
-    const { data: shiftsData } = await supabase
-        .from('shifts')
-        .select('*')
-        .eq('guard_id', member.id)
-        .order('start_time', { ascending: true })
+    // Get Shifts (Only if member exists, Super Admin usually doesn't clock in unless they are also a guard)
+    let shiftsData = null
+    if (member) {
+        const { data } = await supabase
+            .from('shifts')
+            .select('*')
+            .eq('guard_id', member.id)
+            .order('start_time', { ascending: true })
+        shiftsData = data
+    }
 
     const shifts = shiftsData as any[] | null
 
@@ -74,9 +81,11 @@ export default async function GuardSecurityPage({
     // Find Next Scheduled Shift
     const nextShift = shifts?.find((s: any) => s.status === 'scheduled' && new Date(s.start_time) > new Date())
 
-    // Get Guards (for Head of Security)
+    // Get Guards (for Head of Security OR Super Admin)
     let guards = null
-    if (member.role === 'head_of_security') {
+    const canViewTeam = isSuper || (member && member.role === 'head_of_security')
+
+    if (canViewTeam) {
         const { data: guardsData } = await supabase
             .from('members')
             .select(`
@@ -111,7 +120,7 @@ export default async function GuardSecurityPage({
     // Get Potential Recipients
     let potentialRecipients: any[] = []
 
-    if (member.role === 'head_of_security' || member.role === 'community_manager') {
+    if (isSuper || (member && (member.role === 'head_of_security' || member.role === 'community_manager'))) {
         // Can message individual guards
         const { data: guardMembers } = await supabase
             .from('members')
@@ -154,7 +163,7 @@ export default async function GuardSecurityPage({
                             <Calendar className="mr-2 h-4 w-4" />
                             Schedule
                         </TabsTrigger>
-                        {member.role === 'head_of_security' && (
+                        {canViewTeam && (
                             <TabsTrigger value="team" className="flex-1 sm:flex-none">
                                 <ShieldCheck className="mr-2 h-4 w-4" />
                                 Team
@@ -223,7 +232,7 @@ export default async function GuardSecurityPage({
                                     <AlertCircle className="h-4 w-4" />
                                     <AlertTitle>No Active Shift</AlertTitle>
                                     <AlertDescription>
-                                        You do not have an active shift.
+                                        {member ? 'You do not have an active shift.' : 'Super Admin Mode - No shifts assigned.'}
                                     </AlertDescription>
                                 </Alert>
                             )}
@@ -249,7 +258,7 @@ export default async function GuardSecurityPage({
                     <MessageCenter
                         communityId={community.id}
                         communitySlug={slug}
-                        userRole={member.role}
+                        userRole={member?.role || (isSuper ? 'head_of_security' : '')}
                         inboxMessages={inboxMessagesFiltered || []}
                         sentMessages={sentMessagesFiltered || []}
                         potentialRecipients={potentialRecipients || []}
@@ -327,7 +336,7 @@ export default async function GuardSecurityPage({
                 </TabsContent>
 
                 {/* TEAM TAB */}
-                {member.role === 'head_of_security' && (
+                {canViewTeam && (
                     <TabsContent value="team" className="space-y-4 w-full max-w-full">
                         <GuardList
                             communityId={community.id}

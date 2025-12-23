@@ -359,8 +359,13 @@ export async function deleteShift(formData: FormData) {
 
 // --- Visitor Verification ---
 
+// ... (imports)
+
+// ...
+
 export async function verifyVisitorCode(formData: FormData) {
     const supabase = await createClient()
+    const supabaseAdmin = await createAdminClient() // Use Admin for writes ensures no RLS blocks
     const accessCode = formData.get('accessCode') as string
     const communitySlug = formData.get('communitySlug') as string
 
@@ -425,7 +430,7 @@ export async function verifyVisitorCode(formData: FormData) {
 
         if (lastLog) {
             // CLOCK OUT
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseAdmin // Use Admin
                 .from('visitor_logs')
                 .update({
                     exited_at: now.toISOString(),
@@ -478,7 +483,7 @@ export async function verifyVisitorCode(formData: FormData) {
     }
 
     // Log Entry
-    const { error: logError } = await supabase
+    const { error: logError } = await supabaseAdmin // Use Admin
         .from('visitor_logs')
         .insert({
             community_id: community.id,
@@ -518,16 +523,20 @@ export async function verifyVisitorCode(formData: FormData) {
 
     // Mark as Used / Increment Count
     if (code.is_one_time) {
-        await supabase
+        const { error: oneTimeError } = await supabaseAdmin // Use Admin
             .from('visitor_codes')
             .update({ used_at: now.toISOString() })
             .eq('id', code.id)
+
+        if (oneTimeError) console.error('Error updating one-time code status:', oneTimeError)
     } else {
         // Increment usage count (Unlimited or Limited)
-        await supabase
+        const { error: countError } = await supabaseAdmin // Use Admin
             .from('visitor_codes')
             .update({ usage_count: (codeData.usage_count || 0) + 1 } as any)
             .eq('id', code.id)
+
+        if (countError) console.error('Error updating usage count:', countError)
     }
 
     const isStaff = codeData.code_type === 'service_provider' || codeData.code_type === 'staff'

@@ -18,22 +18,22 @@ export function MobileSidebar({ children, className }: MobileSidebarProps) {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon" className="md:hidden hover:bg-white/20">
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Toggle Menu</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
-                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <div className="flex flex-col h-full">
-                    <div className="flex h-14 items-center border-b px-6 lg:h-[60px]">
+            <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0 border-r-0 bg-transparent shadow-none">
+                <div className="h-full w-full glass-panel rounded-r-3xl flex flex-col overflow-hidden">
+                    <div className="flex h-16 items-center border-b border-white/20 px-6">
                         <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setOpen(false)}>
-                            <div className="relative h-10 w-10">
-                                <Image src="/logo.png" alt="DivSecure Logo" fill className="object-contain" />
+                            <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-gradient-to-br from-primary to-indigo-600 shadow-md">
+                                <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-cover p-1.5" />
                             </div>
+                            <span className="font-bold text-lg tracking-tight">DivSecure</span>
                         </Link>
                     </div>
-                    <div className="flex-1 overflow-auto py-4" onClick={(e) => {
+                    <div className="flex-1 overflow-auto py-4 px-2" onClick={(e) => {
                         // Close sidebar when a link is clicked
                         if ((e.target as HTMLElement).closest('a')) {
                             setOpen(false)

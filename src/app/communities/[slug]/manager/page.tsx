@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { GlassCard } from '@/components/ui/glass-card'
 import { ResidentsList } from './residents-list'
 import { GuardsList } from './guards-list'
 import { HouseholdList } from './households/household-list'
@@ -12,6 +12,7 @@ import { SearchInput } from '@/components/search-input'
 import { VisitorLogsList } from './visitors/visitor-logs-list'
 import { GlobalSearch } from '../../manager/global-search'
 import { InviteResidentDialog } from './invite-resident-dialog'
+import { Users, Shield, Home, FileText } from 'lucide-react'
 
 export default async function ManagerDashboardPage({
     params,
@@ -137,86 +138,102 @@ export default async function ManagerDashboardPage({
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Manager Dashboard</h1>
-                    <p className="text-muted-foreground">
-                        Manage your community residents and security.
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">Manager Dashboard</h1>
+                    <p className="text-muted-foreground mt-1">
+                        Overview of <span className="font-medium text-foreground">{community.name}</span> residents and operations.
                     </p>
                 </div>
-                <GlobalSearch communityId={community.id} communitySlug={slug} />
+                <div className="flex items-center gap-3">
+                    <GlobalSearch communityId={community.id} communitySlug={slug} />
+                </div>
             </div>
 
-            <Tabs defaultValue="residents" className="space-y-4">
-                <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <TabsList className="inline-flex h-auto w-auto min-w-full justify-start p-1">
-                        <TabsTrigger value="residents" className="flex-1 sm:flex-none">Residents</TabsTrigger>
-                        <TabsTrigger value="guards" className="flex-1 sm:flex-none">Security Guards</TabsTrigger>
-                        <TabsTrigger value="households" className="flex-1 sm:flex-none">Households</TabsTrigger>
-                        <TabsTrigger value="visitors" className="flex-1 sm:flex-none">Visitor Logs</TabsTrigger>
+            <Tabs defaultValue="residents" className="space-y-6">
+                <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+                    <TabsList className="inline-flex h-12 w-auto min-w-full justify-start p-1 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-xl">
+                        <TabsTrigger value="residents" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                            <Users className="w-4 h-4 mr-2" /> Residents
+                        </TabsTrigger>
+                        <TabsTrigger value="guards" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                            <Shield className="w-4 h-4 mr-2" /> Security
+                        </TabsTrigger>
+                        <TabsTrigger value="households" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                            <Home className="w-4 h-4 mr-2" /> Households
+                        </TabsTrigger>
+                        <TabsTrigger value="visitors" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                            <FileText className="w-4 h-4 mr-2" /> Logs
+                        </TabsTrigger>
                     </TabsList>
                 </div>
 
-                <TabsContent value="residents" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6 flex flex-row items-center justify-between space-y-0 pb-2">
-                            <div className="flex flex-col space-y-1.5">
-                                <CardTitle>Residents</CardTitle>
-                                <CardDescription>
-                                    Manage resident access and approvals.
-                                </CardDescription>
+                <TabsContent value="residents" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full outline-none">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                        <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/50 pb-6 mb-6">
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-semibold tracking-tight">Residents Directory</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Manage resident access, roles, and approvals.
+                                </p>
                             </div>
                             <InviteResidentDialog communityId={community.id} communitySlug={slug} households={households || []} />
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                        </div>
+                        <div className="px-6 pb-6 pt-0">
                             <ResidentsList communityId={community.id} communitySlug={slug} searchQuery={query} />
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </GlassCard>
                 </TabsContent>
 
-                <TabsContent value="guards" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle>Security Guards</CardTitle>
-                            <CardDescription>
-                                Manage security personnel access.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                <TabsContent value="guards" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full outline-none">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                        <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-semibold tracking-tight">Security Personnel</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Manage security guard accounts and station access.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 pt-0">
                             <GuardsList communityId={community.id} searchQuery={query} />
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </GlassCard>
                 </TabsContent>
 
-                <TabsContent value="households" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle>Households</CardTitle>
-                            <CardDescription>
-                                Manage physical units and resident assignments.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                <TabsContent value="households" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full outline-none">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                        <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-semibold tracking-tight">Households</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Manage physical units and resident assignments.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 pt-0">
                             <HouseholdList
                                 households={filteredHouseholds}
                                 unassignedMembers={formattedUnassigned}
                                 communityId={community.id}
                                 communitySlug={slug}
                             />
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </GlassCard>
                 </TabsContent>
 
-                <TabsContent value="visitors" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full">
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle>Visitor Logs</CardTitle>
-                            <CardDescription>
-                                View history of visitor entries.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                <TabsContent value="visitors" className="space-y-4 animate-in zoom-in-95 duration-500 w-full max-w-full outline-none">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                        <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-semibold tracking-tight">Visitor Logs</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    View full history of visitor entries and exits.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 pt-0">
                             <VisitorLogsList communityId={community.id} searchQuery={query} />
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </GlassCard>
                 </TabsContent>
             </Tabs>
         </div>

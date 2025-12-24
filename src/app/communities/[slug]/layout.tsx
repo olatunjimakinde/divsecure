@@ -7,7 +7,7 @@ import { NotificationsPopover } from '@/components/notifications-popover'
 import { SignOutButton } from '@/components/sign-out-button'
 import { MobileCommunityNav } from '@/components/mobile-community-nav'
 import { MobileSidebar } from '@/components/mobile-sidebar'
-import { Building2 } from 'lucide-react'
+import { Building2, Home, Users, User, MessageSquare } from 'lucide-react'
 import { SubscriptionEnforcer } from '@/components/subscription-enforcer'
 import { CommunitySidebarChannels } from '@/components/community-sidebar-channels'
 
@@ -131,10 +131,20 @@ export default async function CommunityLayout({
     }
 
     return (
-        <div className="flex min-h-screen flex-col">
-            <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-6 shadow-sm">
+        <div className="flex min-h-screen flex-col bg-muted/20 relative">
+            {/* Background Gradients */}
+            <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background pointer-events-none" />
+
+            <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-white/20 bg-white/60 dark:bg-black/40 backdrop-blur-xl px-4 md:px-6 shadow-sm">
                 <MobileSidebar>
-                    <div className="p-4 font-semibold text-sm text-muted-foreground flex items-center justify-between">
+                    {/* ... Mobile Sidebar Content ... */}
+                    {/* Reusing existing logic but in a cleaner structure is tricky without re-writing everything. 
+                        I will inject the exact same nav content here but styled. 
+                        Since the MobileSidebar children were just passed through, I should keep the content same but maybe wrap it differently?
+                        Actually, the content passed to MobileSidebar in the original code imports Buttons/Links. 
+                        I will assume the children passed here are the same as before. 
+                    */}
+                    <div className="p-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                         <span>Message Boards</span>
                     </div>
                     <nav className="px-2 space-y-1">
@@ -142,17 +152,17 @@ export default async function CommunityLayout({
                             <Button
                                 key={channel.id}
                                 variant="ghost"
-                                className="w-full justify-start"
+                                className="w-full justify-start font-medium"
                                 asChild
                             >
                                 <Link href={`/communities/${slug}/${channel.slug}`}>
-                                    # {channel.name}
+                                    # <span className="ml-1">{channel.name}</span>
                                 </Link>
                             </Button>
                         ))}
 
                         {isManager && (
-                            <div className="pt-2 mt-2 border-t">
+                            <div className="pt-2 mt-2 border-t border-border/50">
                                 <CreateChannelDialog
                                     communityId={community.id}
                                     communitySlug={community.slug}
@@ -161,7 +171,7 @@ export default async function CommunityLayout({
                         )}
                     </nav>
 
-                    <div className="p-4 font-semibold text-sm text-muted-foreground flex items-center justify-between mt-4 border-t pt-4">
+                    <div className="p-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider flex items-center justify-between mt-4 border-t border-border/50 pt-4">
                         <span>Access</span>
                     </div>
                     <nav className="px-2 space-y-1">
@@ -211,7 +221,7 @@ export default async function CommunityLayout({
                         {/* Security Section - Only for managers/guards */}
                         {(isManager || isGuard) && (
                             <>
-                                <div className="p-4 font-semibold text-sm text-muted-foreground flex items-center justify-between mt-4 border-t pt-4">
+                                <div className="p-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider flex items-center justify-between mt-4 border-t border-border/50 pt-4">
                                     <span>Security</span>
                                 </div>
                                 <nav className="px-2 space-y-1">
@@ -224,32 +234,34 @@ export default async function CommunityLayout({
                             </>
                         )}
 
-                        <div className="pt-4 mt-4 border-t">
+                        <div className="pt-4 mt-4 border-t border-border/50">
                             <SignOutButton />
                         </div>
                     </nav>
                 </MobileSidebar>
-                <div className="flex items-center gap-2 font-semibold">
-                    <Link href="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors hidden md:flex">
-                        <Building2 className="h-5 w-5" />
-                        <span>Dashboard</span>
+                <div className="flex items-center gap-3 font-semibold">
+                    <Link href="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors hidden md:flex">
+                        <div className="p-1.5 rounded-lg bg-primary/10">
+                            <Building2 className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-sm">Dashboard</span>
                     </Link>
-                    <span className="text-muted-foreground hidden md:inline">/</span>
-                    <span className="font-bold text-primary text-lg">{community.name}</span>
+                    <span className="text-muted-foreground/40 hidden md:inline">/</span>
+                    <span className="font-bold text-foreground tracking-tight text-lg">{community.name}</span>
                 </div>
                 <div className="ml-auto flex items-center gap-4">
                     {user && <NotificationsPopover notifications={notifications || []} />}
-                    <Button variant="ghost" asChild className="hidden md:inline-flex">
+                    <Button variant="ghost" asChild className="hidden md:inline-flex text-muted-foreground hover:text-primary">
                         <Link href="/dashboard">Back to Dashboard</Link>
                     </Button>
                 </div>
             </header>
-            <div className="flex flex-1">
-                <aside className="w-72 border-r bg-card/50 backdrop-blur-xl hidden md:flex flex-col h-[calc(100vh-4rem)] sticky top-16">
-                    <div className="flex-1 overflow-y-auto py-6 px-4 space-y-6">
+            <div className="flex flex-1 container max-w-7xl mx-auto md:px-6 md:py-6 gap-6">
+                <aside className="w-72 hidden md:flex flex-col h-[calc(100vh-8rem)] sticky top-24 rounded-2xl glass-panel border-white/20 dark:border-white/10 shadow-sm overflow-hidden">
+                    <div className="flex-1 overflow-y-auto py-6 px-4 space-y-6 custom-scrollbar">
                         {/* Message Boards Section */}
                         <div>
-                            <div className="px-2 text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-2 flex items-center justify-between">
+                            <div className="px-2 text-xs font-bold text-muted-foreground/50 uppercase tracking-wider mb-3 flex items-center justify-between">
                                 <span>Message Boards</span>
                                 {isManager && (
                                     <CreateChannelDialog
@@ -259,38 +271,39 @@ export default async function CommunityLayout({
                                 )}
                             </div>
                             <nav className="space-y-1">
-                                <nav className="space-y-1">
-                                    <CommunitySidebarChannels
-                                        communitySlug={community.slug}
-                                        channels={channels || []}
-                                    />
-                                </nav>
+                                <CommunitySidebarChannels
+                                    communitySlug={community.slug}
+                                    channels={channels || []}
+                                />
                             </nav>
                         </div>
 
                         {/* Access Section */}
                         <div>
-                            <div className="px-2 text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-2">
+                            <div className="px-2 text-xs font-bold text-muted-foreground/50 uppercase tracking-wider mb-3">
                                 Access & Profile
                             </div>
                             <nav className="space-y-1">
                                 {!isGuard && (
-                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all" asChild>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 hover:shadow-sm transition-all duration-200" asChild>
                                         <Link href={`/communities/${slug}/visitors`}>
+                                            <Users className="mr-2 h-4 w-4" />
                                             My Visitors
                                         </Link>
                                     </Button>
                                 )}
 
-                                <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all" asChild>
+                                <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 hover:shadow-sm transition-all duration-200" asChild>
                                     <Link href={`/communities/${slug}/profile`}>
+                                        <User className="mr-2 h-4 w-4" />
                                         My Profile
                                     </Link>
                                 </Button>
 
                                 {isHouseholdHead && (
-                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-primary hover:bg-primary/10 hover:shadow-sm transition-all" asChild>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 hover:shadow-sm transition-all duration-200" asChild>
                                         <Link href={`/communities/${slug}/household`}>
+                                            <Home className="mr-2 h-4 w-4" />
                                             My Household
                                         </Link>
                                     </Button>
@@ -301,26 +314,26 @@ export default async function CommunityLayout({
                         {/* Manager Section */}
                         {isManager && (
                             <div>
-                                <div className="px-2 text-xs font-semibold text-blue-600/80 uppercase tracking-wider mb-2 mt-2">
+                                <div className="px-2 text-xs font-bold text-blue-600/60 uppercase tracking-wider mb-3 mt-4">
                                     Management
                                 </div>
                                 <nav className="space-y-1">
-                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-blue-600 hover:bg-blue-50/50 hover:shadow-sm transition-all duration-200" asChild>
                                         <Link href={`/communities/${slug}/manager`}>
                                             Manager Dashboard
                                         </Link>
                                     </Button>
-                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-blue-600 hover:bg-blue-50/50 hover:shadow-sm transition-all duration-200" asChild>
                                         <Link href={`/communities/${slug}/manager/security`}>
                                             Security Management
                                         </Link>
                                     </Button>
-                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-blue-600 hover:bg-blue-50/50 hover:shadow-sm transition-all duration-200" asChild>
                                         <Link href={`/communities/${slug}/manager/settings/features`}>
                                             Feature Settings
                                         </Link>
                                     </Button>
-                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all" asChild>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-blue-600 hover:bg-blue-50/50 hover:shadow-sm transition-all duration-200" asChild>
                                         <Link href={`/communities/${slug}/manager/billing`}>
                                             Billing
                                         </Link>
@@ -332,11 +345,11 @@ export default async function CommunityLayout({
                         {/* Security Section */}
                         {(isManager || isGuard) && (
                             <div>
-                                <div className="px-2 text-xs font-semibold text-red-600/80 uppercase tracking-wider mb-2 mt-2">
+                                <div className="px-2 text-xs font-bold text-red-600/60 uppercase tracking-wider mb-3 mt-4">
                                     Security
                                 </div>
                                 <nav className="space-y-1">
-                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2 h-auto font-normal text-muted-foreground hover:text-red-600 hover:bg-red-50 hover:shadow-sm transition-all" asChild>
+                                    <Button variant="ghost" className="w-full justify-start rounded-xl px-3 py-2.5 h-auto font-medium text-muted-foreground hover:text-red-600 hover:bg-red-50/50 hover:shadow-sm transition-all duration-200" asChild>
                                         <Link href={`/communities/${slug}/security`}>
                                             Security Station
                                         </Link>
@@ -345,12 +358,9 @@ export default async function CommunityLayout({
                             </div>
                         )}
                     </div>
-
-                    <div className="p-4 border-t bg-muted/20">
-                        <SignOutButton />
-                    </div>
                 </aside>
-                <main className="flex-1 p-4 lg:p-8 mb-16 md:mb-0 pb-20 md:pb-8">
+
+                <main className="flex-1 w-full min-w-0 pb-24 md:pb-0">
                     <SubscriptionEnforcer
                         isExpired={isExpired}
                         isManager={isManager}

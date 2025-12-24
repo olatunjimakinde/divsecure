@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -44,22 +45,24 @@ export default async function ProfilePage({
     }
 
     return (
-        <div className="space-y-6 max-w-2xl">
+        <div className="space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
-                <p className="text-muted-foreground">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">My Profile</h1>
+                <p className="text-muted-foreground mt-1">
                     Manage your personal information.
                 </p>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Personal Details</CardTitle>
-                    <CardDescription>
-                        Update your name and contact information.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
+            <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                    <div className="space-y-1">
+                        <h2 className="text-xl font-semibold tracking-tight">Personal Details</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Update your name and contact information.
+                        </p>
+                    </div>
+                </div>
+                <div className="px-6 pb-6 pt-0">
                     <form action={async (formData) => {
                         'use server'
                         await updateProfile(formData)
@@ -68,7 +71,7 @@ export default async function ProfilePage({
 
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" value={user.email} disabled className="bg-muted" />
+                            <Input id="email" value={user.email} disabled className="bg-muted/50" />
                             <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
                         </div>
 
@@ -79,6 +82,7 @@ export default async function ProfilePage({
                                 name="fullName"
                                 defaultValue={profile?.full_name || ''}
                                 placeholder="Enter your full name"
+                                className="bg-background/50"
                             />
                         </div>
 
@@ -89,31 +93,34 @@ export default async function ProfilePage({
                                 name="phone"
                                 defaultValue={profile?.phone || ''}
                                 placeholder="Enter your phone number"
+                                className="bg-background/50"
                             />
                         </div>
 
-                        <div className="flex justify-end">
-                            <Button type="submit">Save Changes</Button>
+                        <div className="flex justify-end pt-2">
+                            <Button type="submit" className="shadow-sm">Save Changes</Button>
                         </div>
                     </form>
-                </CardContent>
-            </Card>
+                </div>
+            </GlassCard>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Notification Preferences</CardTitle>
-                    <CardDescription>
-                        Manage how you receive alerts and updates.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button variant="outline" asChild>
+            <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                    <div className="space-y-1">
+                        <h2 className="text-xl font-semibold tracking-tight">Notification Preferences</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Manage how you receive alerts and updates.
+                        </p>
+                    </div>
+                </div>
+                <div className="px-6 pb-6 pt-0">
+                    <Button variant="outline" asChild className="w-full sm:w-auto">
                         <Link href={`/communities/${slug}/profile/notifications`}>
                             Manage Notifications
                         </Link>
                     </Button>
-                </CardContent>
-            </Card>
+                </div>
+            </GlassCard>
         </div>
     )
 }

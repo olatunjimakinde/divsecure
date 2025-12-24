@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -53,11 +54,16 @@ export default async function GuardSecurityPage({
 
     if (!isSuper && (!member || !['guard', 'head_of_security', 'community_manager'].includes(member.role))) {
         return (
-            <div className="p-8 text-center">
-                <h1 className="text-2xl font-bold mb-4">Unauthorized</h1>
-                <p className="text-muted-foreground">
-                    You do not have access to the security dashboard.
-                </p>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center animate-in fade-in duration-700">
+                <GlassCard className="max-w-md p-8">
+                    <h1 className="text-2xl font-bold mb-4 text-destructive">Unauthorized</h1>
+                    <p className="text-muted-foreground mb-6">
+                        You do not have access to the security dashboard.
+                    </p>
+                    <Button asChild>
+                        <Link href={`/communities/${slug}`}>Return to Community</Link>
+                    </Button>
+                </GlassCard>
             </div>
         )
     }
@@ -140,31 +146,31 @@ export default async function GuardSecurityPage({
     }
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Security Station</h1>
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Security Station</h1>
                 <p className="text-muted-foreground">
-                    {community.name} Security Dashboard
+                    <span className="font-medium text-foreground">{community.name}</span> Security Dashboard
                 </p>
             </div>
 
-            <Tabs defaultValue="station" className="space-y-4">
-                <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <TabsList className="inline-flex h-auto w-auto min-w-full justify-start p-1">
-                        <TabsTrigger value="station" className="flex-1 sm:flex-none">
+            <Tabs defaultValue="station" className="space-y-6">
+                <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+                    <TabsList className="inline-flex h-12 w-auto min-w-full justify-start p-1 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-xl">
+                        <TabsTrigger value="station" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
                             <ShieldCheck className="mr-2 h-4 w-4" />
                             Station
                         </TabsTrigger>
-                        <TabsTrigger value="messages" className="flex-1 sm:flex-none">
+                        <TabsTrigger value="messages" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
                             <MessageSquare className="mr-2 h-4 w-4" />
                             Messages
                         </TabsTrigger>
-                        <TabsTrigger value="schedule" className="flex-1 sm:flex-none">
+                        <TabsTrigger value="schedule" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
                             <Calendar className="mr-2 h-4 w-4" />
                             Schedule
                         </TabsTrigger>
                         {canViewTeam && (
-                            <TabsTrigger value="team" className="flex-1 sm:flex-none">
+                            <TabsTrigger value="team" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
                                 <ShieldCheck className="mr-2 h-4 w-4" />
                                 Team
                             </TabsTrigger>
@@ -173,62 +179,71 @@ export default async function GuardSecurityPage({
                 </div>
 
                 {/* STATION TAB */}
-                <TabsContent value="station" className="space-y-4 w-full max-w-full">
-
+                <TabsContent value="station" className="space-y-4 w-full max-w-full outline-none">
                     {/* Shift Status Section */}
                     {activeShift ? (
-                        <Card className="border-green-500/50 bg-green-500/10">
-                            <CardHeader className="pb-2 p-4 sm:p-6 sm:pb-2">
+                        <GlassCard className="border-green-500/30 bg-green-500/5 dark:bg-green-500/10 shadow-sm">
+                            <div className="p-6 pb-2">
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
-                                    <CardTitle className="text-green-700">You are On Duty</CardTitle>
+                                    <div className="p-2 rounded-full bg-green-500/20 text-green-600 dark:text-green-400">
+                                        <CheckCircle className="h-5 w-5" />
+                                    </div>
+                                    <h3 className="font-semibold text-lg text-green-700 dark:text-green-400">You are On Duty</h3>
                                 </div>
-                                <CardDescription>
-                                    Shift started at {new Date(activeShift.clock_in_time!).toLocaleTimeString()}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardFooter className="p-4 sm:p-6 sm:pt-0 pt-0">
+                                <p className="text-muted-foreground mt-2 ml-1">
+                                    Shift started at <span className="font-medium text-foreground">{new Date(activeShift.clock_in_time!).toLocaleTimeString()}</span>
+                                </p>
+                            </div>
+                            <div className="p-6 pt-4">
                                 <form action={async (formData) => {
                                     'use server'
                                     await clockOut(formData)
                                 }}>
                                     <input type="hidden" name="shiftId" value={activeShift.id} />
                                     <input type="hidden" name="communitySlug" value={slug} />
-                                    <Button variant="destructive" size="sm">
+                                    <Button variant="destructive" size="sm" className="shadow-sm">
                                         <Clock className="mr-2 h-4 w-4" />
                                         Clock Out
                                     </Button>
                                 </form>
-                            </CardFooter>
-                        </Card>
+                            </div>
+                        </GlassCard>
                     ) : (
                         <>
                             {nextShift ? (
-                                <Alert className="border-blue-500/50 bg-blue-500/10">
-                                    <Clock className="h-4 w-4" />
-                                    <AlertTitle>Upcoming Shift</AlertTitle>
-                                    <AlertDescription>
-                                        Your next shift is scheduled for{' '}
-                                        <span className="font-medium">
-                                            {new Date(nextShift.start_time).toLocaleDateString()} at{' '}
-                                            {new Date(nextShift.start_time).toLocaleTimeString()}
-                                        </span>
-                                        .
-                                    </AlertDescription>
-                                    <form action={async (formData) => {
-                                        'use server'
-                                        await clockIn(formData)
-                                    }} className="mt-4">
-                                        <input type="hidden" name="shiftId" value={nextShift.id} />
-                                        <input type="hidden" name="communitySlug" value={slug} />
-                                        <Button size="sm">
-                                            <Clock className="mr-2 h-4 w-4" />
-                                            Clock In
-                                        </Button>
-                                    </form>
-                                </Alert>
+                                <GlassCard className="border-blue-500/30 bg-blue-500/5 dark:bg-blue-500/10 shadow-sm">
+                                    <div className="p-6">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-2 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400 mt-1">
+                                                <Clock className="h-5 w-5" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-400">Upcoming Shift</h3>
+                                                <p className="text-muted-foreground">
+                                                    Your next shift is scheduled for{' '}
+                                                    <span className="font-medium text-foreground">
+                                                        {new Date(nextShift.start_time).toLocaleDateString()} at{' '}
+                                                        {new Date(nextShift.start_time).toLocaleTimeString()}
+                                                    </span>
+                                                    .
+                                                </p>
+                                                <form action={async (formData) => {
+                                                    'use server'
+                                                    await clockIn(formData)
+                                                }} className="pt-4">
+                                                    <input type="hidden" name="shiftId" value={nextShift.id} />
+                                                    <input type="hidden" name="communitySlug" value={slug} />
+                                                    <Button size="sm" className="shadow-sm">
+                                                        <Clock className="mr-2 h-4 w-4" />
+                                                        Clock In
+                                                    </Button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </GlassCard>
                             ) : (
-                                <Alert variant="default">
+                                <Alert variant="default" className="bg-muted/50 border-muted">
                                     <AlertCircle className="h-4 w-4" />
                                     <AlertTitle>No Active Shift</AlertTitle>
                                     <AlertDescription>
@@ -240,47 +255,53 @@ export default async function GuardSecurityPage({
                     )}
 
                     {/* Verification Section - Always Visible */}
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle>Access Code Verification</CardTitle>
-                            <CardDescription>
-                                Verify visitor access codes.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm hover-effect={false}">
+                        <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-semibold tracking-tight">Access Code Verification</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Verify visitor access codes.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 pt-0">
                             <SecurityForm slug={slug} />
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </GlassCard>
                 </TabsContent>
 
                 {/* MESSAGES TAB */}
-                <TabsContent value="messages" className="space-y-4 w-full max-w-full">
-                    <MessageCenter
-                        communityId={community.id}
-                        communitySlug={slug}
-                        userRole={member?.role || (isSuper ? 'head_of_security' : '')}
-                        inboxMessages={inboxMessagesFiltered || []}
-                        sentMessages={sentMessagesFiltered || []}
-                        potentialRecipients={potentialRecipients || []}
-                    />
+                <TabsContent value="messages" className="space-y-4 w-full max-w-full outline-none">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm p-6">
+                        <MessageCenter
+                            communityId={community.id}
+                            communitySlug={slug}
+                            userRole={member?.role || (isSuper ? 'head_of_security' : '')}
+                            inboxMessages={inboxMessagesFiltered || []}
+                            sentMessages={sentMessagesFiltered || []}
+                            potentialRecipients={potentialRecipients || []}
+                        />
+                    </GlassCard>
                 </TabsContent>
 
                 {/* SCHEDULE TAB */}
-                <TabsContent value="schedule" className="space-y-4 w-full max-w-full">
+                <TabsContent value="schedule" className="space-y-4 w-full max-w-full outline-none">
                     {/* Upcoming Shifts */}
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle>My Shifts</CardTitle>
-                            <CardDescription>
-                                Your upcoming schedule.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                        <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-semibold tracking-tight">My Shifts</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Your upcoming schedule.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 pt-0">
                             <div className="space-y-4">
                                 {shifts?.filter(s => s.status === 'scheduled').map((shift) => (
-                                    <div key={shift.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4 sm:gap-0">
+                                    <div key={shift.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-xl bg-card/50 gap-4 sm:gap-0 hover:bg-muted/50 transition-colors">
                                         <div>
-                                            <div className="font-medium">
+                                            <div className="font-semibold text-lg">
                                                 {new Date(shift.start_time).toLocaleDateString()}
                                             </div>
                                             <div className="text-sm text-muted-foreground">
@@ -294,7 +315,7 @@ export default async function GuardSecurityPage({
                                             }}>
                                                 <input type="hidden" name="shiftId" value={shift.id} />
                                                 <input type="hidden" name="communitySlug" value={slug} />
-                                                <Button size="sm" className="w-full sm:w-auto">
+                                                <Button size="sm" className="w-full sm:w-auto shadow-sm">
                                                     <Clock className="mr-2 h-4 w-4" />
                                                     Clock In
                                                 </Button>
@@ -303,46 +324,60 @@ export default async function GuardSecurityPage({
                                     </div>
                                 ))}
                                 {!shifts?.filter(s => s.status === 'scheduled').length && (
-                                    <p className="text-center text-muted-foreground py-4">
+                                    <p className="text-center text-muted-foreground py-8 bg-muted/20 rounded-xl border border-dashed">
                                         No upcoming shifts scheduled.
                                     </p>
                                 )}
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </GlassCard>
 
                     {/* Shift History */}
-                    <Card>
-                        <CardHeader className="p-4 sm:p-6">
-                            <CardTitle>History</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                    <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                        <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                            <div className="space-y-1">
+                                <h2 className="text-xl font-semibold tracking-tight">History</h2>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-6 pt-0">
                             <div className="space-y-2">
                                 {shifts?.filter(s => s.status === 'completed').map((shift) => (
-                                    <div key={shift.id} className="flex flex-col sm:flex-row sm:justify-between text-sm p-2 hover:bg-muted rounded gap-1 sm:gap-0">
+                                    <div key={shift.id} className="flex flex-col sm:flex-row sm:justify-between text-sm p-3 hover:bg-muted/50 rounded-lg gap-1 sm:gap-0 transition-colors border border-transparent hover:border-border/50">
                                         <div className="flex justify-between sm:block">
-                                            <span>{new Date(shift.start_time).toLocaleDateString()}</span>
-                                            <Badge variant="secondary" className="sm:hidden">Completed</Badge>
+                                            <span className="font-medium">{new Date(shift.start_time).toLocaleDateString()}</span>
+                                            <Badge variant="secondary" className="sm:hidden text-[10px] h-5">Completed</Badge>
                                         </div>
                                         <span className="text-muted-foreground">
                                             {new Date(shift.clock_in_time!).toLocaleTimeString()} - {new Date(shift.clock_out_time!).toLocaleTimeString()}
                                         </span>
-                                        <Badge variant="secondary" className="hidden sm:inline-flex">Completed</Badge>
+                                        <Badge variant="secondary" className="hidden sm:inline-flex h-5">Completed</Badge>
                                     </div>
                                 ))}
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </GlassCard>
                 </TabsContent>
 
                 {/* TEAM TAB */}
                 {canViewTeam && (
-                    <TabsContent value="team" className="space-y-4 w-full max-w-full">
-                        <GuardList
-                            communityId={community.id}
-                            communitySlug={slug}
-                            guards={guards || []}
-                        />
+                    <TabsContent value="team" className="space-y-4 w-full max-w-full outline-none">
+                        <GlassCard className="border-white/20 dark:border-white/10 shadow-sm">
+                            <div className="p-6 border-b border-border/50 pb-6 mb-6">
+                                <div className="space-y-1">
+                                    <h2 className="text-xl font-semibold tracking-tight">Access Control Team</h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        Team overview.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="px-6 pb-6 pt-0">
+                                <GuardList
+                                    communityId={community.id}
+                                    communitySlug={slug}
+                                    guards={guards || []}
+                                />
+                            </div>
+                        </GlassCard>
                     </TabsContent>
                 )}
             </Tabs>

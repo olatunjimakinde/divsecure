@@ -23,6 +23,7 @@ export async function VisitorLogsList({
         .select(`
             id,
             entered_at,
+            exited_at,
             entry_point,
             visitor_codes!inner (
                 visitor_name,
@@ -41,11 +42,7 @@ export async function VisitorLogsList({
         .order('entered_at', { ascending: false })
 
     if (searchQuery) {
-        // This search is a bit complex with nested relations.
-        // We might need to filter on the client or use a more complex query.
-        // For now, let's try to filter by visitor name if possible, but !inner on visitor_codes helps.
-        // But searching across multiple tables is tricky in one go.
-        // We'll skip search for now or implement a basic one.
+        // ... (search logic skipped as per original)
     }
 
     const { data: logs, error } = await query
@@ -68,9 +65,9 @@ export async function VisitorLogsList({
                             <TableHead>Time</TableHead>
                             <TableHead>Visitor</TableHead>
                             <TableHead>Host</TableHead>
-                            <TableHead>Vehicle</TableHead>
-                            <TableHead>Entry Point</TableHead>
+                            <TableHead>Vehicle/Entry</TableHead>
                             <TableHead>Verified By</TableHead>
+                            <TableHead>Status / Exit</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -101,19 +98,35 @@ export async function VisitorLogsList({
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    {log.visitor_codes.vehicle_plate ? (
-                                        <Badge variant="outline" className="font-mono">
-                                            {log.visitor_codes.vehicle_plate}
-                                        </Badge>
-                                    ) : (
-                                        <span className="text-muted-foreground">-</span>
-                                    )}
+                                    <div className="flex flex-col gap-1">
+                                        {log.visitor_codes.vehicle_plate ? (
+                                            <Badge variant="outline" className="font-mono w-max">
+                                                {log.visitor_codes.vehicle_plate}
+                                            </Badge>
+                                        ) : (
+                                            <span className="text-muted-foreground text-xs">-</span>
+                                        )}
+                                        <span className="text-xs text-muted-foreground">{log.entry_point || 'Main Gate'}</span>
+                                    </div>
                                 </TableCell>
-                                <TableCell>{log.entry_point || 'Main Gate'}</TableCell>
                                 <TableCell>
                                     <span className="text-sm text-muted-foreground">
                                         {log.guard?.full_name || 'System'}
                                     </span>
+                                </TableCell>
+                                <TableCell>
+                                    {log.exited_at ? (
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium">Exited</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(log.exited_at).toLocaleTimeString()}
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <Badge variant="secondary" className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 border-green-500/20">
+                                            Active
+                                        </Badge>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -133,31 +146,41 @@ export async function VisitorLogsList({
                                 </div>
                             </div>
                             <div className="text-right shrink-0">
-                                <div className="font-medium text-sm">
-                                    {new Date(log.entered_at).toLocaleDateString()}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                    {new Date(log.entered_at).toLocaleTimeString()}
-                                </div>
+                                {log.exited_at ? (
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-xs font-medium text-muted-foreground">Exited</span>
+                                        <span className="text-sm font-medium">
+                                            {new Date(log.exited_at).toLocaleTimeString()}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <Badge variant="secondary" className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 border-green-500/20">
+                                        Active
+                                    </Badge>
+                                )}
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className="flex flex-col">
                                 <span className="text-muted-foreground text-xs">Host</span>
                                 <span className="truncate">{log.visitor_codes.host?.full_name || 'Unknown'}</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-muted-foreground text-xs">Vehicle</span>
-                                <span className="truncate">{log.visitor_codes.vehicle_plate || '-'}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-muted-foreground text-xs">Entry Point</span>
-                                <span className="truncate">{log.entry_point || 'Main Gate'}</span>
-                            </div>
-                            <div className="flex flex-col">
                                 <span className="text-muted-foreground text-xs">Verified By</span>
                                 <span className="truncate">{log.guard?.full_name || 'System'}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-muted-foreground text-xs">Vehicle / Gate</span>
+                                <span className="truncate">
+                                    {log.visitor_codes.vehicle_plate || '-'} <span className="text-muted-foreground mx-1">•</span> {log.entry_point || 'Main'}
+                                </span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-muted-foreground text-xs">Entry Time</span>
+                                <span className="truncate">
+                                    {new Date(log.entered_at).toLocaleTimeString()}
+                                </span>
                             </div>
                         </div>
                     </div>

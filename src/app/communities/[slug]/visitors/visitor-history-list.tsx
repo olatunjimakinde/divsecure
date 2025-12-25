@@ -21,11 +21,15 @@ export async function VisitorHistoryList({
         .select(`
             id,
             entered_at,
+            exited_at,
             entry_point,
             visitor_codes!inner (
                 visitor_name,
                 vehicle_plate,
                 access_code
+            ),
+            guard:profiles!guard_id (
+                full_name
             )
         `)
         .eq('community_id', communityId)
@@ -48,7 +52,8 @@ export async function VisitorHistoryList({
                         <TableHead>Time</TableHead>
                         <TableHead>Visitor</TableHead>
                         <TableHead>Vehicle</TableHead>
-                        <TableHead>Entry Point</TableHead>
+                        <TableHead>Verified By</TableHead>
+                        <TableHead>Status / Exit</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -79,7 +84,25 @@ export async function VisitorHistoryList({
                                     <span className="text-muted-foreground">-</span>
                                 )}
                             </TableCell>
-                            <TableCell>{log.entry_point || 'Main Gate'}</TableCell>
+                            <TableCell>
+                                <span className="text-sm">
+                                    {log.guard?.full_name || 'System'}
+                                </span>
+                            </TableCell>
+                            <TableCell>
+                                {log.exited_at ? (
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium">Exited</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(log.exited_at).toLocaleTimeString()}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <Badge variant="secondary" className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 border-green-500/20">
+                                        Active
+                                    </Badge>
+                                )}
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

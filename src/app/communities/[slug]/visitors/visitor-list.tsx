@@ -97,83 +97,160 @@ export function VisitorList({ codes, communitySlug }: VisitorListProps) {
     }
 
     return (
-        <div className="rounded-md border overflow-x-auto">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Code</TableHead>
-                        <TableHead>Visitor</TableHead>
-                        <TableHead>Valid Period</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {codes.map((code) => {
-                        const status = getStatus(code)
-                        const showUsage = !code.is_one_time && code.max_uses
+        <div className="space-y-4">
+            {/* Desktop Table View */}
+            <div className="hidden md:block rounded-md border overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Code</TableHead>
+                            <TableHead>Visitor</TableHead>
+                            <TableHead>Valid Period</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {codes.map((code) => {
+                            const status = getStatus(code)
+                            const showUsage = !code.is_one_time && code.max_uses
 
-                        return (
-                            <TableRow key={code.id} className={status.label === 'Expired' || status.label === 'Used' || status.label === 'Exhausted' ? 'bg-muted/30' : ''}>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`font-mono font-bold text-lg px-2 py-1 rounded ${status.label === 'Suspended' ? 'bg-destructive/10 text-destructive line-through' : 'bg-muted'}`}>
-                                            {code.access_code}
-                                        </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                                            onClick={() => copyToClipboard(code.access_code, code.id)}
-                                        >
-                                            {copiedId === code.id ? (
-                                                <Check className="h-4 w-4 text-green-600" />
-                                            ) : (
-                                                <Copy className="h-4 w-4" />
-                                            )}
-                                            <span className="sr-only">Copy code</span>
-                                        </Button>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col">
+                            return (
+                                <TableRow key={code.id} className={status.label === 'Expired' || status.label === 'Used' || status.label === 'Exhausted' ? 'bg-muted/30' : ''}>
+                                    <TableCell>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-medium">{code.visitor_name}</span>
-                                            {code.code_type !== 'visitor' && (
-                                                <Badge variant="outline" className="text-[10px] h-5 px-1 py-0">
-                                                    {code.code_type === 'service_provider' ? 'Service' : 'Staff'}
-                                                </Badge>
+                                            <span className={`font-mono font-bold text-lg px-2 py-1 rounded ${status.label === 'Suspended' ? 'bg-destructive/10 text-destructive line-through' : 'bg-muted'}`}>
+                                                {code.access_code}
+                                            </span>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                onClick={() => copyToClipboard(code.access_code, code.id)}
+                                            >
+                                                {copiedId === code.id ? (
+                                                    <Check className="h-4 w-4 text-green-600" />
+                                                ) : (
+                                                    <Copy className="h-4 w-4" />
+                                                )}
+                                                <span className="sr-only">Copy code</span>
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">{code.visitor_name}</span>
+                                                {code.code_type !== 'visitor' && (
+                                                    <Badge variant="outline" className="text-[10px] h-5 px-1 py-0">
+                                                        {code.code_type === 'service_provider' ? 'Service' : 'Staff'}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            {code.vehicle_plate && (
+                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                    🚗 {code.vehicle_plate}
+                                                </span>
                                             )}
                                         </div>
-                                        {code.vehicle_plate && (
-                                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                🚗 {code.vehicle_plate}
-                                            </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col text-sm text-muted-foreground">
+                                            <span>{formatDate(code.valid_from)}</span>
+                                            <span className="text-xs">to {formatDate(code.valid_until)}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col gap-1 items-start">
+                                            <Badge variant={status.variant} className="capitalize">
+                                                {status.label}
+                                            </Badge>
+                                            {showUsage && (
+                                                <span className="text-xs text-muted-foreground">
+                                                    {code.usage_count} / {code.max_uses} uses
+                                                </span>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <span className="sr-only">Open menu</span>
+                                                    <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                <DropdownMenuItem onClick={() => setRescheduleCode(code)}>
+                                                    <Calendar className="mr-2 h-4 w-4" />
+                                                    Reschedule
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setToggleStatusId(code.id)}>
+                                                    {code.is_active ? (
+                                                        <>
+                                                            <Ban className="mr-2 h-4 w-4" />
+                                                            Suspend
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <PlayCircle className="mr-2 h-4 w-4" />
+                                                            Activate
+                                                        </>
+                                                    )}
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem
+                                                    className="text-destructive focus:text-destructive"
+                                                    onClick={() => setDeleteCodeId(code.id)}
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="grid gap-4 md:hidden">
+                {codes.map((code) => {
+                    const status = getStatus(code)
+                    const showUsage = !code.is_one_time && code.max_uses
+
+                    return (
+                        <div key={code.id} className={`flex flex-col gap-3 rounded-lg border p-4 shadow-sm bg-card transition-colors ${status.label === 'Expired' || status.label === 'Used' || status.label === 'Exhausted' ? 'opacity-80 bg-muted/20' : ''}`}>
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className={`font-mono font-bold text-lg px-2 py-1 rounded ${status.label === 'Suspended' ? 'bg-destructive/10 text-destructive line-through' : 'bg-muted'}`}>
+                                        {code.access_code}
+                                    </span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                        onClick={() => copyToClipboard(code.access_code, code.id)}
+                                    >
+                                        {copiedId === code.id ? (
+                                            <Check className="h-4 w-4 text-green-600" />
+                                        ) : (
+                                            <Copy className="h-4 w-4" />
                                         )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col text-sm text-muted-foreground">
-                                        <span>{formatDate(code.valid_from)}</span>
-                                        <span className="text-xs">to {formatDate(code.valid_until)}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col gap-1 items-start">
-                                        <Badge variant={status.variant} className="capitalize">
-                                            {status.label}
-                                        </Badge>
-                                        {showUsage && (
-                                            <span className="text-xs text-muted-foreground">
-                                                {code.usage_count} / {code.max_uses} uses
-                                            </span>
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right">
+                                        <span className="sr-only">Copy code</span>
+                                    </Button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant={status.variant} className="capitalize">
+                                        {status.label}
+                                    </Badge>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
                                                 <span className="sr-only">Open menu</span>
                                                 <MoreHorizontal className="h-4 w-4" />
                                             </Button>
@@ -207,12 +284,44 @@ export function VisitorList({ codes, communitySlug }: VisitorListProps) {
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        )
-                    })}
-                </TableBody>
-            </Table>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-start">
+                                <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium">{code.visitor_name}</span>
+                                        {code.code_type !== 'visitor' && (
+                                            <Badge variant="outline" className="text-[10px] h-5 px-1 py-0">
+                                                {code.code_type === 'service_provider' ? 'Service' : 'Staff'}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                    {code.vehicle_plate && (
+                                        <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                            🚗 {code.vehicle_plate}
+                                        </span>
+                                    )}
+                                </div>
+                                {showUsage && (
+                                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                        {code.usage_count} / {code.max_uses} uses
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col text-sm text-muted-foreground border-t pt-2 mt-1">
+                                <span className="text-xs uppercase tracking-wider text-muted-foreground/70 mb-0.5">Valid Period</span>
+                                <div className="flex justify-between items-baseline">
+                                    <span>{formatDate(code.valid_from)}</span>
+                                    <span className="mx-2 text-xs">to</span>
+                                    <span>{formatDate(code.valid_until)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
 
             {/* Reschedule Dialog */}
             <Dialog open={!!rescheduleCode} onOpenChange={(open) => !open && setRescheduleCode(null)}>

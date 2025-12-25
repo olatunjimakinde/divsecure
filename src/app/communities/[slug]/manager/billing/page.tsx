@@ -105,18 +105,18 @@ export default async function ManagerBillingPage({
     } = await import('../../../billing/recurring-actions')
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Billing</h1>
                     <p className="text-muted-foreground">
                         Manage estate bills, recurring charges, and enforcement rules.
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline">Billing Settings</Button>
+                            <Button variant="outline" className="w-full sm:w-auto justify-center">Billing Settings</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -174,7 +174,7 @@ export default async function ManagerBillingPage({
 
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button>
+                            <Button className="w-full sm:w-auto justify-center shadow-lg shadow-primary/20">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Create Bill
                             </Button>
@@ -236,7 +236,7 @@ export default async function ManagerBillingPage({
 
             <div className="grid gap-6">
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
+                    <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <CardTitle>Recurring Charges</CardTitle>
                             <CardDescription>
@@ -245,7 +245,7 @@ export default async function ManagerBillingPage({
                         </div>
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button variant="secondary" size="sm">
+                                <Button variant="secondary" size="sm" className="w-full sm:w-auto">
                                     <Plus className="mr-2 h-4 w-4" />
                                     New Recurring Charge
                                 </Button>
@@ -292,40 +292,80 @@ export default async function ManagerBillingPage({
                         </Dialog>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Frequency</TableHead>
-                                    <TableHead>Last Generated</TableHead>
-                                    <TableHead>Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {recurringCharges?.map((charge) => (
-                                    <TableRow key={charge.id}>
-                                        <TableCell>{charge.title}</TableCell>
-                                        <TableCell>₦{charge.amount}</TableCell>
-                                        <TableCell className="capitalize">{charge.frequency}</TableCell>
-                                        <TableCell>
-                                            {charge.last_generated_at
-                                                ? new Date(charge.last_generated_at).toLocaleDateString()
-                                                : 'Never'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <RecurringChargeActions charge={charge} communityId={community.id} slug={slug} />                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {!recurringCharges?.length && (
+                        {/* Desktop Table */}
+                        <div className="hidden md:block rounded-md border">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                                            No recurring charges configured.
-                                        </TableCell>
+                                        <TableHead>Title</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Frequency</TableHead>
+                                        <TableHead>Last Generated</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Action</TableHead>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {recurringCharges?.map((charge) => (
+                                        <TableRow key={charge.id}>
+                                            <TableCell className="font-medium">{charge.title}</TableCell>
+                                            <TableCell>₦{charge.amount}</TableCell>
+                                            <TableCell className="capitalize">{charge.frequency}</TableCell>
+                                            <TableCell>
+                                                {charge.last_generated_at
+                                                    ? new Date(charge.last_generated_at).toLocaleDateString()
+                                                    : 'Never'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={charge.active ? 'default' : 'secondary'}>
+                                                    {charge.active ? 'Active' : 'Paused'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <RecurringChargeActions charge={charge} communityId={community.id} slug={slug} />                                        </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {!recurringCharges?.length && (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                                                No recurring charges configured.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Grid */}
+                        <div className="grid gap-4 md:hidden">
+                            {recurringCharges?.map((charge) => (
+                                <div key={charge.id} className="flex flex-col gap-3 rounded-lg border p-4 shadow-sm bg-card hover:bg-muted/5 transition-colors">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <div className="font-semibold">{charge.title}</div>
+                                            <div className="text-sm text-muted-foreground capitalize">{charge.frequency}</div>
+                                        </div>
+                                        <Badge variant={charge.active ? 'default' : 'secondary'}>
+                                            {charge.active ? 'Active' : 'Paused'}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <div className="text-lg font-bold">₦{charge.amount}</div>
+                                        <RecurringChargeActions charge={charge} communityId={community.id} slug={slug} />
+                                    </div>
+                                    <div className="text-xs text-muted-foreground border-t pt-2 mt-1">
+                                        Last generated: {charge.last_generated_at
+                                            ? new Date(charge.last_generated_at).toLocaleDateString()
+                                            : 'Never'}
+                                    </div>
+                                </div>
+                            ))}
+                            {!recurringCharges?.length && (
+                                <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                                    No recurring charges configured.
+                                </div>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -337,50 +377,88 @@ export default async function ManagerBillingPage({
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Household</TableHead>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Due Date</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {bills?.map((bill) => (
-                                    <TableRow key={bill.id}>
-                                        <TableCell>
-                                            {new Date(bill.created_at).toLocaleDateString()}
-                                        </TableCell>
-                                        <TableCell>{bill.households?.name}</TableCell>
-                                        <TableCell>{bill.title}</TableCell>
-                                        <TableCell>₦{bill.amount}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={
-                                                bill.status === 'paid' ? 'default' :
-                                                    bill.status === 'overdue' ? 'destructive' : 'secondary'
-                                            }>
-                                                {bill.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Household</TableHead>
+                                        <TableHead>Title</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {bills?.map((bill) => (
+                                        <TableRow key={bill.id}>
+                                            <TableCell>
+                                                {new Date(bill.created_at).toLocaleDateString()}
+                                            </TableCell>
+                                            <TableCell>{bill.households?.name}</TableCell>
+                                            <TableCell>{bill.title}</TableCell>
+                                            <TableCell>₦{bill.amount}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={
+                                                    bill.status === 'paid' ? 'default' :
+                                                        bill.status === 'overdue' ? 'destructive' : 'secondary'
+                                                }>
+                                                    {bill.status}
+                                                </Badge>
+                                            </TableCell>
                                             <TableCell>
                                                 <BillActions bill={bill} slug={slug} />
                                             </TableCell>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {!bills?.length && (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            No bills found.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                        </TableRow>
+                                    ))}
+                                    {!bills?.length && (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                No bills found.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Grid */}
+                        <div className="grid gap-4 md:hidden">
+                            {bills?.map((bill) => (
+                                <div key={bill.id} className="flex flex-col gap-3 rounded-lg border p-4 shadow-sm bg-card hover:bg-muted/5 transition-colors">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <div className="font-semibold">{bill.title}</div>
+                                            <div className="text-sm text-muted-foreground">{bill.households?.name}</div>
+                                        </div>
+                                        <Badge variant={
+                                            bill.status === 'paid' ? 'default' :
+                                                bill.status === 'overdue' ? 'destructive' : 'secondary'
+                                        }>
+                                            {bill.status}
+                                        </Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <div className="text-lg font-bold">₦{bill.amount}</div>
+                                        <BillActions bill={bill} slug={slug} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground border-t pt-2 mt-1">
+                                        <div>
+                                            Issued: {new Date(bill.created_at).toLocaleDateString()}
+                                        </div>
+                                        <div>
+                                            Due: {bill.due_date ? new Date(bill.due_date).toLocaleDateString() : 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {!bills?.length && (
+                                <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                                    No bills found.
+                                </div>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
             </div>

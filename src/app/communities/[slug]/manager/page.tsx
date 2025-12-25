@@ -150,17 +150,29 @@ export default async function ManagerDashboardPage({
 
             <Tabs defaultValue="residents" className="space-y-6">
                 <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-                    <TabsList className="inline-flex h-12 w-auto min-w-full justify-start p-1 bg-white/40 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-xl">
-                        <TabsTrigger value="residents" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                    <TabsList className="inline-flex h-auto w-auto min-w-full justify-start p-1 bg-transparent border-0 gap-2">
+                        <TabsTrigger
+                            value="residents"
+                            className="flex-1 sm:flex-none rounded-full border border-border/50 bg-background/50 hover:bg-background/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary transition-all duration-300 px-4 py-2.5 h-auto text-sm font-medium shadow-sm"
+                        >
                             <Users className="w-4 h-4 mr-2" /> Residents
                         </TabsTrigger>
-                        <TabsTrigger value="guards" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                        <TabsTrigger
+                            value="guards"
+                            className="flex-1 sm:flex-none rounded-full border border-border/50 bg-background/50 hover:bg-background/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary transition-all duration-300 px-4 py-2.5 h-auto text-sm font-medium shadow-sm"
+                        >
                             <Shield className="w-4 h-4 mr-2" /> Security
                         </TabsTrigger>
-                        <TabsTrigger value="households" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                        <TabsTrigger
+                            value="households"
+                            className="flex-1 sm:flex-none rounded-full border border-border/50 bg-background/50 hover:bg-background/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary transition-all duration-300 px-4 py-2.5 h-auto text-sm font-medium shadow-sm"
+                        >
                             <Home className="w-4 h-4 mr-2" /> Households
                         </TabsTrigger>
-                        <TabsTrigger value="visitors" className="flex-1 sm:flex-none data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:shadow-sm rounded-lg transition-all duration-300">
+                        <TabsTrigger
+                            value="visitors"
+                            className="flex-1 sm:flex-none rounded-full border border-border/50 bg-background/50 hover:bg-background/80 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary transition-all duration-300 px-4 py-2.5 h-auto text-sm font-medium shadow-sm"
+                        >
                             <FileText className="w-4 h-4 mr-2" /> Logs
                         </TabsTrigger>
                     </TabsList>

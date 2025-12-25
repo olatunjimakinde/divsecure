@@ -126,26 +126,28 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsUploadOpen(true)}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload CSV
-                </Button>
-                <Button variant="outline" onClick={() => setIsBulkCreateOpen(true)}>
-                    <Users className="mr-2 h-4 w-4" />
-                    Bulk Create
-                </Button>
-                <Button onClick={() => setIsCreateOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Household
-                </Button>
+            <div className="w-full overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+                <div className="flex gap-2 min-w-max sm:justify-end">
+                    <Button variant="outline" onClick={() => setIsUploadOpen(true)} className="rounded-full shadow-sm border-border/50 bg-background/50 backdrop-blur-sm">
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload CSV
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsBulkCreateOpen(true)} className="rounded-full shadow-sm border-border/50 bg-background/50 backdrop-blur-sm">
+                        <Users className="mr-2 h-4 w-4" />
+                        Bulk Create
+                    </Button>
+                    <Button onClick={() => setIsCreateOpen(true)} className="rounded-full shadow-sm shadow-primary/20">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Household
+                    </Button>
+                </div>
             </div>
 
             {/* ... (Table) ... */}
 
             {/* Upload Dialog */}
             <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Upload Households CSV</DialogTitle>
                         <DialogDescription>
@@ -180,7 +182,7 @@ export function HouseholdList({ households, unassignedMembers, communityId, comm
                             </div>
                             <div className="text-sm text-muted-foreground">
                                 <p>Example CSV format:</p>
-                                <pre className="mt-2 rounded bg-muted p-2">
+                                <pre className="mt-2 rounded bg-muted p-2 overflow-x-auto">
                                     name,contact_email{'\n'}
                                     Unit 101,resident@example.com{'\n'}
                                     Unit 102,

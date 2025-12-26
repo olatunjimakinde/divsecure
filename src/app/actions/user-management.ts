@@ -46,7 +46,7 @@ export async function deleteUser(userId: string, communitySlug: string) {
     // but middleware handles it on next request.
 
     // 5. Revalidate
-    revalidatePath(`/communities/${communitySlug}`)
+    revalidatePath(`/communities/${communitySlug}`, 'layout')
 
     return { success: true }
 }

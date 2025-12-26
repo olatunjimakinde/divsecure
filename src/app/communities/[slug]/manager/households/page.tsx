@@ -48,7 +48,7 @@ export default async function HouseholdsPage({ params }: { params: Promise<{ slu
                 id,
                 user_id,
                 is_household_head,
-                profiles:profiles(full_name, email)
+                profiles:profiles(full_name, email, status)
             )
         `)
         .eq('community_id', community.id)
@@ -64,11 +64,13 @@ export default async function HouseholdsPage({ params }: { params: Promise<{ slu
         .select(`
             id,
             user_id,
-            profiles:profiles(full_name, email)
+
+            profiles:profiles!inner(full_name, email, status)
         `)
         .eq('community_id', community.id)
         .eq('role', 'resident')
         .is('household_id', null)
+        .neq('profiles.status', 'removed')
         .order('created_at', { ascending: false })
 
     if (membersError) {
@@ -84,8 +86,10 @@ export default async function HouseholdsPage({ params }: { params: Promise<{ slu
             user_id: m.user_id, // Added user_id
             name: m.profiles?.full_name || 'Unknown',
             email: m.profiles?.email || 'No email',
-            is_household_head: m.is_household_head || false
-        })) || []
+            is_household_head: m.is_household_head || false,
+            status: m.profiles?.status
+        }))
+            .filter((m: any) => m.status !== 'removed') || []
     })) || []
 
     const formattedUnassigned = unassignedMembers?.map((m: any) => ({

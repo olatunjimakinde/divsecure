@@ -23,11 +23,13 @@ export async function ResidentsList({ communityId, communitySlug, searchQuery }:
             ),
             profiles!inner (
                 full_name,
-                email
+                email,
+                status
             )
         `)
         .eq('community_id', communityId)
         .eq('role', 'resident')
+        .neq('profiles.status', 'removed')
         .order('created_at', { ascending: false })
 
     if (searchQuery) {

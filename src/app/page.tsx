@@ -39,8 +39,8 @@ export default async function LandingPage() {
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/70 dark:bg-black/40 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60">
         <div className="container flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-            <div className="relative h-8 w-8 overflow-hidden rounded-xl bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/20">
-              <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-cover p-1" />
+            <div className="relative h-8 w-8">
+              <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-contain" />
             </div>
             <span className="font-semibold text-foreground">
               <span className="text-primary">Div</span>Secure
@@ -290,8 +290,8 @@ export default async function LandingPage() {
         <div className="container px-4 md:px-6 grid gap-12 md:grid-cols-4">
           <div className="space-y-6">
             <div className="flex items-center gap-2 font-bold text-xl">
-              <div className="relative h-8 w-8 overflow-hidden rounded-lg bg-gradient-to-br from-primary to-indigo-600">
-                <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-cover p-1" />
+              <div className="relative h-8 w-8">
+                <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-contain" />
               </div>
               <span className="font-semibold">
                 <span className="text-primary">Div</span>Secure

@@ -32,8 +32,8 @@ export default async function SignupPage(props: {
 
             <GlassCard className="w-full max-w-md p-8 md:p-10 border-white/20 dark:border-white/10 shadow-2xl">
                 <div className="flex flex-col items-center w-full mb-8 text-center">
-                    <div className="relative h-12 w-12 mb-6 overflow-hidden rounded-xl bg-gradient-to-br from-primary to-indigo-600 shadow-lg shadow-primary/20">
-                        <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-cover p-1.5" />
+                    <div className="relative h-12 w-12 mb-6">
+                        <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-contain" />
                     </div>
                     <h1 className="text-2xl font-bold text-foreground mb-2">Create an account</h1>
                     <p className="text-muted-foreground text-sm">Join your community or create a new one.</p>

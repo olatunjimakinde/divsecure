@@ -27,8 +27,8 @@ export function MobileSidebar({ children, className }: MobileSidebarProps) {
                 <div className="h-full w-full glass-panel rounded-r-3xl flex flex-col overflow-hidden">
                     <div className="flex h-16 items-center border-b border-white/20 px-6">
                         <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setOpen(false)}>
-                            <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-gradient-to-br from-primary to-indigo-600 shadow-md">
-                                <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-cover p-1.5" />
+                            <div className="relative h-10 w-10">
+                                <Image src="/logo-icon.png" alt="DivSecure Logo" fill className="object-contain" />
                             </div>
                             <span className="font-bold text-lg tracking-tight">DivSecure</span>
                         </Link>

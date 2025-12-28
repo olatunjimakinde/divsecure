@@ -8,6 +8,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { FormattedDate } from '@/components/formatted-date'
 
 export async function VisitorHistoryList({
     communityId,
@@ -64,10 +65,10 @@ export async function VisitorHistoryList({
                                 <TableCell>
                                     <div className="flex flex-col">
                                         <span className="font-medium">
-                                            {new Date(log.entered_at).toLocaleDateString()}
+                                            <FormattedDate date={log.entered_at} type="date" />
                                         </span>
                                         <span className="text-xs text-muted-foreground">
-                                            {new Date(log.entered_at).toLocaleTimeString()}
+                                            <FormattedDate date={log.entered_at} type="time" />
                                         </span>
                                     </div>
                                 </TableCell>
@@ -96,7 +97,7 @@ export async function VisitorHistoryList({
                                         <div className="flex flex-col">
                                             <span className="text-sm font-medium">Exited</span>
                                             <span className="text-xs text-muted-foreground">
-                                                {new Date(log.exited_at).toLocaleTimeString()}
+                                                <FormattedDate date={log.exited_at} type="time" />
                                             </span>
                                         </div>
                                     ) : (
@@ -122,10 +123,10 @@ export async function VisitorHistoryList({
                             </div>
                             <div className="flex flex-col items-end">
                                 <span className="font-medium text-sm">
-                                    {new Date(log.entered_at).toLocaleDateString()}
+                                    <FormattedDate date={log.entered_at} type="date" />
                                 </span>
                                 <span className="text-xs text-muted-foreground">
-                                    {new Date(log.entered_at).toLocaleTimeString()}
+                                    <FormattedDate date={log.entered_at} type="time" />
                                 </span>
                             </div>
                         </div>
@@ -152,7 +153,7 @@ export async function VisitorHistoryList({
                             <span className="text-sm font-medium">Status</span>
                             {log.exited_at ? (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm text-muted-foreground">Exited at {new Date(log.exited_at).toLocaleTimeString()}</span>
+                                    <span className="text-sm text-muted-foreground">Exited at <FormattedDate date={log.exited_at} type="time" /></span>
                                 </div>
                             ) : (
                                 <Badge variant="secondary" className="bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 border-green-500/20">
